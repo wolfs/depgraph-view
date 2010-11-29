@@ -6,12 +6,9 @@ import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Hudson;
 import hudson.model.Item;
 
-import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class CalculateDeps {
@@ -41,9 +38,9 @@ public class CalculateDeps {
 		for (AbstractProject<?,?> project : fromProjects) {
 			if (project.hasPermission(Item.READ)) {
 				newProj.addAll(
-						addNewDependencies(getRealDependencies(depGraph.getUpstreamDependencies(project)),true));
+						addNewDependencies(depGraph.getUpstreamDependencies(project),true));
 				newProj.addAll(
-						addNewDependencies(getRealDependencies(depGraph.getDownstreamDependencies(project)),false));
+						addNewDependencies(depGraph.getDownstreamDependencies(project),false));
 			}
 		}
 		visitedProj.addAll(newProj);
@@ -52,15 +49,7 @@ public class CalculateDeps {
 		}
 	}
 
-	private Set<Dependency> getRealDependencies(Collection<Dependency> depGroups) {
-		Set<Dependency> deps = new HashSet<Dependency>();
-		for (Dependency dependency : depGroups) {
-			deps.addAll(getDependenciesFromDepGroup(dependency));
-		}
-		return deps;
-	}
-
-	private Set<AbstractProject<?, ?>> addNewDependencies(Set<Dependency> dependencies, boolean isUpstream) {
+	private Set<AbstractProject<?, ?>> addNewDependencies(Collection<Dependency> dependencies, boolean isUpstream) {
 		Set<AbstractProject<?,?>> newProj = new HashSet<AbstractProject<?, ?>>();
 		for (Dependency dep : dependencies) {
 			AbstractProject<?,?> projectToAdd = isUpstream ? dep.getUpstreamProject() : dep.getDownstreamProject();
@@ -73,32 +62,6 @@ public class CalculateDeps {
 		}
 		return newProj;
 	}
-
-	private Set<Dependency> getDependenciesFromDepGroup(Dependency dep) {
-		Class<?>[] declaredClasses = DependencyGraph.class.getDeclaredClasses();
-		Class<?> depGroup = null;
-		for (Class<?> clazz : declaredClasses) {
-			if (clazz.getName().endsWith("DependencyGroup")) {
-				depGroup = clazz;
-				break;
-			}
-		}
-		if (depGroup == null) {
-			LOGGER.log(Level.SEVERE,"Error extracting dependencies vom DependencyGroup");
-			return Collections.singleton(dep);
-		}
-		try {
-			Field declaredField = depGroup.getDeclaredField("group");
-			declaredField.setAccessible(true);
-			@SuppressWarnings("unchecked")
-			Set<Dependency> subDeps = (Set<Dependency>) declaredField.get(dep);
-			return subDeps;
-		} catch (Exception e) {
-			LOGGER.log(Level.SEVERE,"Error extracting dependencies vom DependencyGroup",e);
-			return Collections.singleton(dep);
-		}
-	}
-
 
 	public Set<AbstractProject<?, ?>> getProjects() {
 		if (!calculated) {
