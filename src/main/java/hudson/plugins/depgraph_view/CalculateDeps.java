@@ -1,10 +1,10 @@
 package hudson.plugins.depgraph_view;
 
+import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
-import hudson.model.Item;
-import hudson.model.AbstractProject;
 import hudson.model.Hudson;
+import hudson.model.Item;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -39,10 +39,12 @@ public class CalculateDeps {
 		Set<AbstractProject<?,?>> newProj = new HashSet<AbstractProject<?, ?>>();
 		DependencyGraph depGraph = Hudson.getInstance().getDependencyGraph();
 		for (AbstractProject<?,?> project : fromProjects) {
-			newProj.addAll(
-					addNewDependencies(getRealDependencies(depGraph.getUpstreamDependencies(project)),true));
-			newProj.addAll(
-					addNewDependencies(getRealDependencies(depGraph.getDownstreamDependencies(project)),false));
+			if (project.hasPermission(Item.READ)) {
+				newProj.addAll(
+						addNewDependencies(getRealDependencies(depGraph.getUpstreamDependencies(project)),true));
+				newProj.addAll(
+						addNewDependencies(getRealDependencies(depGraph.getDownstreamDependencies(project)),false));
+			}
 		}
 		visitedProj.addAll(newProj);
 		if (!newProj.isEmpty()) {

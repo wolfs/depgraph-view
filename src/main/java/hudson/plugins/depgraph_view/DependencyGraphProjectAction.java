@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Logger;
 
+import org.kohsuke.stapler.StaplerRequest;
+
 
 
 public final class DependencyGraphProjectAction extends AbstractDependencyGraphAction {
@@ -22,7 +24,7 @@ public final class DependencyGraphProjectAction extends AbstractDependencyGraphA
 	}
 
 	@Override
-	protected Collection<AbstractProject<?, ?>> getProjectsForDepgraph() {
+	protected Collection<AbstractProject<?, ?>> getProjectsForDepgraph(StaplerRequest req) {
 		return Collections.<AbstractProject<?, ?>>singleton(project);
 	}
 }

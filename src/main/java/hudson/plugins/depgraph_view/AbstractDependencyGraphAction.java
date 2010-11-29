@@ -1,9 +1,9 @@
 package hudson.plugins.depgraph_view;
 
 import hudson.Launcher;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph.Dependency;
-import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
 import hudson.util.LogTaskListener;
@@ -42,6 +42,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
 				);
 
 	private static final Comparator<Dependency> DEP_COMPARATOR = new Comparator<Dependency>() {
+			@Override
 			public int compare(Dependency o1, Dependency o2) {
 				int down = (PROJECT_COMPARATOR.compare(o1.getDownstreamProject(),o2.getDownstreamProject()));
 				return down != 0 ? down : PROJECT_COMPARATOR
@@ -49,6 +50,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
 			}
 		};
 	private static final Comparator<AbstractProject<?,?>> PROJECT_COMPARATOR = new Comparator<AbstractProject<?,?>>() {
+			@Override
 			public int compare(AbstractProject<?,?> o1, AbstractProject<?,?> o2) {
 				return o1.getName().compareTo(o2.getName());
 			}
@@ -70,14 +72,17 @@ public abstract class AbstractDependencyGraphAction implements Action {
 
 		}
 
+	@Override
 	public String getIconFileName() {
 		return "graph.gif";
 	}
 
+	@Override
 	public String getDisplayName() {
 		return "Dependency Graph";
 	}
 
+	@Override
 	public String getUrlName() {
 		return "depgraph-view";
 	}
@@ -95,6 +100,11 @@ public abstract class AbstractDependencyGraphAction implements Action {
 				} catch (InterruptedException e) {
 					LOGGER.severe("Interrupted while waiting for dot-file to be created:" + e);
 					e.printStackTrace();
+				}
+				finally {
+					if (output != null) {
+						output.close();
+					}
 				}
 			}
 
@@ -147,7 +157,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
 		return "\"" + toEscape + "\"";
 	}
 
-	protected abstract Collection<? extends AbstractProject<?, ?>> getProjectsForDepgraph();
+	protected abstract Collection<? extends AbstractProject<?, ?>> getProjectsForDepgraph(StaplerRequest req);
 
 	public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException {
 			String path = req.getRestOfPath();
@@ -155,7 +165,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
 				String extension = path.substring("/graph.".length());
 				if (extension2Type.containsKey(extension.toLowerCase())) {
 					SupportedImageType imageType = extension2Type.get(extension.toLowerCase());
-					CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph());
+					CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph(req));
 					String graphDot = generateDotText(calculateDeps.getProjects(), calculateDeps.getDependencies());
 					rsp.setContentType(imageType.contentType);
 					if ("dot".equalsIgnoreCase(extension)) {
@@ -163,7 +173,6 @@ public abstract class AbstractDependencyGraphAction implements Action {
 					} else {
 						runDot(rsp.getOutputStream(), new ByteArrayInputStream(graphDot.getBytes()), imageType.dotType);
 					}
-					rsp.getOutputStream().close();
 				}
 			} else {
 				rsp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
