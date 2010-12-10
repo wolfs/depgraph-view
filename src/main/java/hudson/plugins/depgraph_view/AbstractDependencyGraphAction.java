@@ -38,7 +38,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
 				"png",SupportedImageType.of("image/png", "png"),
 				"svg",SupportedImageType.of("image/svg", "svg"),
 				"map",SupportedImageType.of("image/cmapx", "cmapx"),
-				"dot",SupportedImageType.of("text/plain", "dot")
+				"gv",SupportedImageType.of("text/plain", "gv")
 				);
 
 	private static final Comparator<Dependency> DEP_COMPARATOR = new Comparator<Dependency>() {
@@ -79,7 +79,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
 
 	@Override
 	public String getDisplayName() {
-		return "Dependency Graph";
+		return Messages.AbstractDependencyGraphAction_DependencyGraph();
 	}
 
 	@Override
@@ -159,6 +159,8 @@ public abstract class AbstractDependencyGraphAction implements Action {
 
 	protected abstract Collection<? extends AbstractProject<?, ?>> getProjectsForDepgraph(StaplerRequest req);
 
+	public abstract String getTitle();
+
 	public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException {
 			String path = req.getRestOfPath();
 			if (path.startsWith("/graph.")) {
@@ -168,7 +170,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
 					CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph(req));
 					String graphDot = generateDotText(calculateDeps.getProjects(), calculateDeps.getDependencies());
 					rsp.setContentType(imageType.contentType);
-					if ("dot".equalsIgnoreCase(extension)) {
+					if ("gv".equalsIgnoreCase(extension)) {
 						rsp.getWriter().append(graphDot).close();
 					} else {
 						runDot(rsp.getOutputStream(), new ByteArrayInputStream(graphDot.getBytes()), imageType.dotType);

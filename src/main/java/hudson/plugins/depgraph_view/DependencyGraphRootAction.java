@@ -1,11 +1,7 @@
 package hudson.plugins.depgraph_view;
 
 import hudson.Extension;
-import hudson.model.AbstractProject;
-import hudson.model.Hudson;
-import hudson.model.RootAction;
-import hudson.model.TopLevelItem;
-import hudson.model.View;
+import hudson.model.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,16 +9,18 @@ import java.util.List;
 
 import org.kohsuke.stapler.StaplerRequest;
 
-@Extension
+
 public class DependencyGraphRootAction extends AbstractDependencyGraphAction
-	implements RootAction {
+	implements Action {
+
+    private View view;
+
+    public DependencyGraphRootAction(View view) {
+        this.view = view;
+    }
 
 	@Override
 	protected Collection<? extends AbstractProject<?, ?>> getProjectsForDepgraph(StaplerRequest req) {
-		View view = req.findAncestorObject(View.class);
-		if (view == null) {
-			view = Hudson.getInstance().getPrimaryView();
-		}
 		Collection<TopLevelItem> items = view.getItems();
 		List<AbstractProject<?,?>> projects = new ArrayList<AbstractProject<?,?>>();
 		for (TopLevelItem item : items) {
@@ -33,12 +31,13 @@ public class DependencyGraphRootAction extends AbstractDependencyGraphAction
 		return projects;
 	}
 
-	public View getMainView() {
-		return Hudson.getInstance().getPrimaryView();
+	@Override
+	public String getTitle() {
+		return Messages.AbstractDependencyGraphAction_DependencyGraphOf(view.getDisplayName());
 	}
 
-	public View getAncestorView(StaplerRequest req) {
-		return req.findAncestorObject(View.class);
-	}
+    public View getView() {
+        return view;
+    }
 
 }

@@ -27,4 +27,9 @@ public final class DependencyGraphProjectAction extends AbstractDependencyGraphA
 	protected Collection<AbstractProject<?, ?>> getProjectsForDepgraph(StaplerRequest req) {
 		return Collections.<AbstractProject<?, ?>>singleton(project);
 	}
+
+	@Override
+	public String getTitle() {
+		return Messages.AbstractDependencyGraphAction_DependencyGraphOf(project.getDisplayName());
+	}
 }

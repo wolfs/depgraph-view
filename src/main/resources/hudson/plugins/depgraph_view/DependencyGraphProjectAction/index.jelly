@@ -1,9 +1,4 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:sv="/lib/sectioned_view" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-<l:layout title="${it.project.displayName} Dependency Graph">
-<st:include it="${it.project}" page="sidepanel.jelly" />
-<l:main-panel>    
-<h2>Dependency Graph</h2>
-<img src="graph.png" lazymap="graph.map"/>
-</l:main-panel>
-</l:layout>
+<j:set var="parentObject" value="${it.project}" />
+<st:include it="${it}" page="mainPanel.jelly"/>
 </j:jelly>

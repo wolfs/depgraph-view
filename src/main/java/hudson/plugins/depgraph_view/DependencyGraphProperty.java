@@ -4,12 +4,9 @@ import hudson.Extension;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.Action;
-import hudson.model.BuildListener;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
+import hudson.model.*;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.FormValidation;
 
 import java.io.IOException;
@@ -23,27 +20,14 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 
-public class DependencyGraphProperty extends JobProperty<AbstractProject<?,?>> {
+public class DependencyGraphProperty extends NodeProperty<Node> {
 
 	@DataBoundConstructor
 	public DependencyGraphProperty() {
 	}
 
-	@Override
-	public Collection<? extends Action> getJobActions(AbstractProject<?, ?> job) {
-		return Collections.singleton(new DependencyGraphProjectAction(job));
-	}
-
-	@Override
-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
-			BuildListener listener) throws InterruptedException, IOException {
-		return true;
-	}
-
-
-
 	@Extension
-	public static class DescriptorImpl extends JobPropertyDescriptor {
+	public static class DescriptorImpl extends NodePropertyDescriptor {
 
 		private String dotExe;
 
