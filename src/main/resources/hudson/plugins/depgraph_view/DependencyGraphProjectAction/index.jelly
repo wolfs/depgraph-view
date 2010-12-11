@@ -1,4 +1,0 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:sv="/lib/sectioned_view" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-<j:set var="parentObject" value="${it.project}" />
-<st:include it="${it}" page="mainPanel.jelly"/>
-</j:jelly>

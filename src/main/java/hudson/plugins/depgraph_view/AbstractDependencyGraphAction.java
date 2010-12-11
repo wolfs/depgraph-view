@@ -1,34 +1,25 @@
 package hudson.plugins.depgraph_view;
 
+import com.google.common.collect.ImmutableMap;
 import hudson.Launcher;
+import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
 import hudson.util.LogTaskListener;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import com.google.common.collect.ImmutableMap;
 
 public abstract class AbstractDependencyGraphAction implements Action {
 	private final Logger LOGGER = Logger.getLogger(Logger.class.getName());
@@ -131,13 +122,11 @@ public abstract class AbstractDependencyGraphAction implements Action {
 				builder.append(projectToNodeString(proj)).append(";\n");
 			}
 
-			Map<Class<?>, String> depClass2Color = new HashMap<Class<?>, String>();
 			for (Dependency dep : sortedDeps) {
 				builder.append(dependencyToEdgeString(dep));
 				builder.append(";\n");
-
-
 			}
+
 			builder.append("color=white;\n}\n");
 			return builder.append("}").toString();
 		}
@@ -160,6 +149,8 @@ public abstract class AbstractDependencyGraphAction implements Action {
 	protected abstract Collection<? extends AbstractProject<?, ?>> getProjectsForDepgraph(StaplerRequest req);
 
 	public abstract String getTitle();
+
+    public abstract AbstractModelObject getParentObject();
 
 	public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException {
 			String path = req.getRestOfPath();

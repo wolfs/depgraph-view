@@ -7,6 +7,7 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -16,10 +17,6 @@ public class CalculateDeps {
 	private final Set<Dependency> visitedDeps = new HashSet<Dependency>();
 	private final Set<AbstractProject<?,?>> visitedProj = new HashSet<AbstractProject<?,?>>();
 	private boolean calculated = false;
-
-	public CalculateDeps(AbstractProject<?, ?> proj) {
-		visitedProj.add(proj);
-	}
 
 	public CalculateDeps(Collection<? extends AbstractProject<?, ?>> projects) {
 		visitedProj.addAll(projects);
@@ -67,13 +64,13 @@ public class CalculateDeps {
 		if (!calculated) {
 			calculateNodesAndDependencies();
 		}
-		return visitedProj;
+		return Collections.unmodifiableSet(visitedProj);
 	}
 	public Set<Dependency> getDependencies() {
 		if (!calculated) {
 			calculateNodesAndDependencies();
 		}
-		return visitedDeps;
+		return Collections.unmodifiableSet(visitedDeps);
 	}
 
 }

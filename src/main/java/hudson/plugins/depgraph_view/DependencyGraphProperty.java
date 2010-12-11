@@ -2,19 +2,12 @@ package hudson.plugins.depgraph_view;
 
 import hudson.Extension;
 import hudson.Functions;
-import hudson.Launcher;
 import hudson.Util;
-import hudson.model.*;
+import hudson.model.Node;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.FormValidation;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-
 import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
