@@ -1,2 +1,6 @@
 /target
 /work
+/.classpath
+/.project
+/*.iml
+/.settings
