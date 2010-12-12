@@ -30,11 +30,17 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-<!--  <groupId>hudson.plugin</groupId>-->
   <artifactId>depgraph-view</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
-
+  <name>Hudson Dependency Graph Viewer Plugin</name>
+  <groupId>hudson.plugin</groupId>
+  <version>0.0.1-SNAPSHOT</version>
+  <developers>
+    <developer>
+      <id>wolfs</id>
+      <name>Stefan Wolf</name>
+    </developer>
+  </developers>
   <build>
     <plugins>
       <plugin>
@@ -63,18 +69,4 @@
     <developerConnection>scm:git:git@github.com:wolfs/depgraph-view.git</developerConnection>
     <url>http://github.com/wolfs/depgraph-view</url>
   </scm>
-  <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need -->
-  <repositories>
-    <repository>
-      <id>m.g.o-public</id>
-      <url>http://maven.glassfish.org/content/groups/public/</url>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>m.g.o-public</id>
-      <url>http://maven.glassfish.org/content/groups/public/</url>
-    </pluginRepository>
-  </pluginRepositories>
 </project>
