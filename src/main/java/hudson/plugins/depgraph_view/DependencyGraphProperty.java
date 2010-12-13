@@ -41,56 +41,56 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyGraphProperty> {
 
-	@DataBoundConstructor
-	public DependencyGraphProperty() {
-	}
+    @DataBoundConstructor
+    public DependencyGraphProperty() {
+    }
 
-	@Extension
-	public static class DescriptorImpl extends Descriptor<DependencyGraphProperty> {
+    @Extension
+    public static class DescriptorImpl extends Descriptor<DependencyGraphProperty> {
 
-		private String dotExe;
+        private String dotExe;
 
-		public DescriptorImpl() {
-			load();
-		}
+        public DescriptorImpl() {
+            load();
+        }
 
-		@Override
+        @Override
         public boolean configure( StaplerRequest req, JSONObject o ) {
-			dotExe = Util.fixEmptyAndTrim(o.getString("dotExe"));
+            dotExe = Util.fixEmptyAndTrim(o.getString("dotExe"));
             save();
 
             return true;
         }
 
-		@Override
-		public String getDisplayName() {
-			return Messages.DependencyGraphProperty_DependencyGraphViewer();
-		}
+        @Override
+        public String getDisplayName() {
+            return Messages.DependencyGraphProperty_DependencyGraphViewer();
+        }
 
-		public String getDotExe() {
-			return dotExe;
-		}
+        public String getDotExe() {
+            return dotExe;
+        }
 
         /**
          * @return configured dot executable or a default
          */
-		public String getDotExeOrDefault() {
-			if (Util.fixEmptyAndTrim(dotExe) == null) {
-				return Functions.isWindows() ? "dot.exe" : "dot";
-			} else {
-				return dotExe;
-			}
-		}
+        public String getDotExeOrDefault() {
+            if (Util.fixEmptyAndTrim(dotExe) == null) {
+                return Functions.isWindows() ? "dot.exe" : "dot";
+            } else {
+                return dotExe;
+            }
+        }
 
-		public synchronized void setDotExe(String dotPath) {
-			this.dotExe = dotPath;
-			save();
-		}
+        public synchronized void setDotExe(String dotPath) {
+            this.dotExe = dotPath;
+            save();
+        }
 
-		public FormValidation doCheckDotExe(@QueryParameter final String value) {
-			return FormValidation.validateExecutable(value);
-		}
+        public FormValidation doCheckDotExe(@QueryParameter final String value) {
+            return FormValidation.validateExecutable(value);
+        }
 
-	}
+    }
 
 }

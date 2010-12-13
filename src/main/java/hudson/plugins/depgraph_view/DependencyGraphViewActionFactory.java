@@ -41,7 +41,7 @@ public class DependencyGraphViewActionFactory extends TransientViewActionFactory
      * Shows the connected components containing the projects of the view
      */
     public static class DependencyGraphViewAction extends AbstractDependencyGraphAction
-        implements Action {
+            implements Action {
 
         private View view;
 
