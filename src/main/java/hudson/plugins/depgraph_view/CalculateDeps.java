@@ -48,8 +48,10 @@ public class CalculateDeps {
     private final Set<Dependency> visitedDeps = new HashSet<Dependency>();
     private final Set<AbstractProject<?,?>> visitedProj = new HashSet<AbstractProject<?,?>>();
     private boolean calculated = false;
+    private DependencyGraph dependencyGraph;
 
     public CalculateDeps(Collection<? extends AbstractProject<?, ?>> projects) {
+        this.dependencyGraph = Hudson.getInstance().getDependencyGraph();
         visitedProj.addAll(projects);
     }
 
@@ -62,13 +64,12 @@ public class CalculateDeps {
 
     private void calculateNodesAndDependencies(Set<AbstractProject<?, ?>> fromProjects) {
         Set<AbstractProject<?,?>> newProj = new HashSet<AbstractProject<?, ?>>();
-        DependencyGraph depGraph = Hudson.getInstance().getDependencyGraph();
         for (AbstractProject<?,?> project : fromProjects) {
             if (project.hasPermission(Item.READ)) {
                 newProj.addAll(
-                        addNewDependencies(depGraph.getUpstreamDependencies(project),true));
+                        addNewDependencies(dependencyGraph.getUpstreamDependencies(project),true));
                 newProj.addAll(
-                        addNewDependencies(depGraph.getDownstreamDependencies(project),false));
+                        addNewDependencies(dependencyGraph.getDownstreamDependencies(project),false));
             }
         }
         visitedProj.addAll(newProj);
