@@ -5,6 +5,9 @@ Shows the dependency graph of the Hudson projects.
 
 Features
 --------
-* Show dependency graph of a project
-* Show whole dependency graph
+* Show the dependency graph via graphviz
+** restricted to projects in a view
+** restricted to one project
+* Respects access permissions
+* Show the graphviz source file
 
