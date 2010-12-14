@@ -34,7 +34,7 @@
   <packaging>hpi</packaging>
   <name>Hudson Dependency Graph Viewer Plugin</name>
   <groupId>hudson.plugin</groupId>
-  <version>0.1</version>
+  <version>0.2-SNAPSHOT</version>
   <url>http://wiki.hudson-ci.org/display/HUDSON/Dependency+Graph+View+Plugin</url>
   <developers>
     <developer>
