@@ -34,8 +34,8 @@
   <packaging>hpi</packaging>
   <name>Hudson Dependency Graph Viewer Plugin</name>
   <groupId>hudson.plugin</groupId>
-  <version>0.1</version>
-  <url>http://wiki.hudson-ci.org/display/HUDSON/Dependency+Graph+Viewer+Plugin</url>
+  <version>0.1-SNAPSHOT</version>
+  <url>http://wiki.hudson-ci.org/display/HUDSON/Dependency+Graph+View+Plugin</url>
   <developers>
     <developer>
       <id>wolfs</id>
@@ -66,8 +66,8 @@
     </extensions>
   </build>
   <scm>
-    <connection>scm:git:git://github.com/hudson/depgraph-view.git</connection>
-    <developerConnection>scm:git:git@github.com:hudson/depgraph-view.git</developerConnection>
-    <url>http://github.com/hudson/depgraph-view</url>
+    <connection>scm:git:git://github.com/hudson/depgraph-view-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:hudson/depgraph-view-plugin.git</developerConnection>
+    <url>http://github.com/hudson/depgraph-view-plugin</url>
   </scm>
 </project>
