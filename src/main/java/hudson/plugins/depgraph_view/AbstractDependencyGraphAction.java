@@ -77,7 +77,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
     private static final Comparator<AbstractProject<?,?>> PROJECT_COMPARATOR = new Comparator<AbstractProject<?,?>>() {
         @Override
         public int compare(AbstractProject<?,?> o1, AbstractProject<?,?> o2) {
-            return o1.getName().compareTo(o2.getName());
+            return o1.getFullName().compareTo(o2.getFullName());
         }
     };
 
@@ -161,14 +161,14 @@ public abstract class AbstractDependencyGraphAction implements Action {
     }
 
     private String projectToNodeString(AbstractProject<?, ?> proj) {
-        return escapeString(proj.getName()) +
+        return escapeString(proj.getFullDisplayName()) +
                 " [href=" +
                 escapeString(Hudson.getInstance().getRootUrlFromRequest() + proj.getUrl()) + "]";
     }
 
     private String dependencyToEdgeString(Dependency dep) {
-        return escapeString(dep.getUpstreamProject().getName()) + " -> " +
-                escapeString(dep.getDownstreamProject().getName());
+        return escapeString(dep.getUpstreamProject().getFullDisplayName()) + " -> " +
+                escapeString(dep.getDownstreamProject().getFullDisplayName());
     }
 
     private String escapeString(String toEscape) {
