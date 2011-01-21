@@ -77,7 +77,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
     private static final Comparator<AbstractProject<?,?>> PROJECT_COMPARATOR = new Comparator<AbstractProject<?,?>>() {
         @Override
         public int compare(AbstractProject<?,?> o1, AbstractProject<?,?> o2) {
-            return o1.getFullName().compareTo(o2.getFullName());
+            return o1.getFullDisplayName().compareTo(o2.getFullDisplayName());
         }
     };
 
