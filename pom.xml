@@ -32,7 +32,7 @@
   <artifactId>depgraph-view</artifactId>
   <packaging>hpi</packaging>
   <name>Dependency Graph Viewer Plugin</name>
-  <version>0.2</version>
+  <version>0.3-SNAPSHOT</version>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Dependency+Graph+View+Plugin</url>
   <developers>
     <developer>
