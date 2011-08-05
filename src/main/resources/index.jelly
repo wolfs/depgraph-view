@@ -26,6 +26,6 @@
   Since we don't really have anything dynamic here, let's just use static HTML.
 -->
 <div>
-  This plugin shows the dependency graph of the projects in Hudson. It uses dot (from graphviz)
-    for drawing.
+  This plugin shows a dependency graph of the projects.
+  It uses dot (from graphviz) for drawing.
 </div>
