@@ -23,17 +23,17 @@
 package hudson.plugins.depgraph_view;
 
 import hudson.model.AbstractProject;
-
 import hudson.model.TaskListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
+import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.Plugin;
 import hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig;
 import hudson.plugins.parameterizedtrigger.TriggerBuilder;
 import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.tasks.Builder;
-import hudson.model.Hudson;
-import hudson.model.Item;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -79,44 +79,53 @@ public class CalculateDeps {
     List<AbstractProject<?,?>> getCopiedArtifacts(AbstractProject<?,?> project) {
     
         List<AbstractProject<?,?>> copiedArtifacts = new ArrayList<AbstractProject<?, ?>>();
-    
-        if(project instanceof FreeStyleProject) {
-        
-            FreeStyleProject proj = (FreeStyleProject) project;
-            List<Builder> builders = proj.getBuilders();
-            
-            for (Builder builder : builders) {
-            
-                if (builder instanceof CopyArtifact) {
                 
-                    CopyArtifact caBuilder = (CopyArtifact) builder;
-                    String projectName = caBuilder.getProjectName();                    
-                    Hudson hudson = Hudson.getInstance();
-                    AbstractProject<?,?> projectFromName = hudson.getItemByFullName(projectName, AbstractProject.class);                                        
+        Plugin copyartifact = Hudson.getInstance().getPlugin("copyartifact");
+        if (copyartifact != null) {                                                    
+            if(project instanceof FreeStyleProject) {
+            
+                FreeStyleProject proj = (FreeStyleProject) project;
+                List<Builder> builders = proj.getBuilders();
+                
+                for (Builder builder : builders) {
+                
+                    if (builder instanceof CopyArtifact) {
                     
-                    copiedArtifacts.add( projectFromName );
+                        CopyArtifact caBuilder = (CopyArtifact) builder;
+                        String projectName = caBuilder.getProjectName();                    
+                        Hudson hudson = Hudson.getInstance();
+                        AbstractProject<?,?> projectFromName = hudson.getItemByFullName(projectName, AbstractProject.class);                                        
+                        
+                        copiedArtifacts.add( projectFromName );
+                    }
                 }
-            }
-        }        
+            }        
+        }
+        
         return copiedArtifacts;
     }
     
     List<AbstractProject<?,?>> getSubProjects(AbstractProject<?,?> project) throws IOException, ServletException, InterruptedException   {
         List<AbstractProject<?,?>> subProjects = new ArrayList<AbstractProject<?, ?>>();
-        if(project instanceof FreeStyleProject) {
-        
-            FreeStyleProject proj = (FreeStyleProject) project;
-            List<Builder> builders = proj.getBuilders();
-            
-            for (Builder builder : builders) {
-            
-                if (builder instanceof TriggerBuilder) {
                 
-                    TriggerBuilder tBuilder = (TriggerBuilder) builder;
-                    for (BlockableBuildTriggerConfig config : tBuilder.getConfigs()) {
+        Plugin parameterizedTrigger = Hudson.getInstance().getPlugin("parameterized-trigger");
+        if (parameterizedTrigger != null) {                                 
+        
+            if(project instanceof FreeStyleProject) {
+            
+                FreeStyleProject proj = (FreeStyleProject) project;
+                List<Builder> builders = proj.getBuilders();
+                
+                for (Builder builder : builders) {
+                
+                    if (builder instanceof TriggerBuilder) {
                     
-                        for (AbstractProject<?,?> abstractProject : config.getProjectList(null)) {
-                            subProjects.add( abstractProject );                        
+                        TriggerBuilder tBuilder = (TriggerBuilder) builder;
+                        for (BlockableBuildTriggerConfig config : tBuilder.getConfigs()) {
+                        
+                            for (AbstractProject<?,?> abstractProject : config.getProjectList(null)) {
+                                subProjects.add( abstractProject );                        
+                            }
                         }
                     }
                 }
@@ -137,8 +146,7 @@ public class CalculateDeps {
                 
                 Set<Dependency> subProjectDeps  = new HashSet<Dependency>();
                 
-                for(AbstractProject<?,?> subProject : getSubProjects(project))
-                {
+                for(AbstractProject<?,?> subProject : getSubProjects(project)) {
                     subProjectDeps.add(new Dependency(project, subProject));                                
                 }
                  
@@ -149,11 +157,8 @@ public class CalculateDeps {
                         addNewSubJobs(subProjectDeps,false));      
                 
                 List<AbstractProject<?,?>> copiedArtifactsTemp = getCopiedArtifacts(project);
-                for(AbstractProject<?,?> copiedProject : copiedArtifactsTemp)
-                {
-                    // Looks a bit nasty. Why would either be null? I think there's a potential problem in getCopiedArtifacts...
-                    if(copiedProject == null || project == null)
-                    {
+                for(AbstractProject<?,?> copiedProject : copiedArtifactsTemp) {
+                    if(copiedProject == null || project == null) {
                         continue;
                     }
                     copiedArtifacts.add(new Dependency(project, copiedProject));                                

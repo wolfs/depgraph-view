@@ -115,14 +115,16 @@ public abstract class AbstractDependencyGraphAction implements Action {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp)  throws IOException, ServletException, InterruptedException   {
         String path = req.getRestOfPath();
         if (path.startsWith("/graph.")) {
-            String extension = path.substring("/graph.".length());
-            if (extension2Type.containsKey(extension.toLowerCase())) {
+            String extension = path.substring("/graph.".length());            
+            if (extension2Type.containsKey(extension.toLowerCase())) {            
                 SupportedImageType imageType = extension2Type.get(extension.toLowerCase());
                 CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph());
                 String graphDot = generateDotText(calculateDeps.getProjects(), 
+                
                 calculateDeps.getDependencies(), 
                 calculateDeps.getSubJobs(), 
                 calculateDeps.getCopiedArtifacts());
+                
                 rsp.setContentType(imageType.contentType);
                 if ("gv".equalsIgnoreCase(extension)) {
                     rsp.getWriter().append(graphDot).close();
@@ -148,28 +150,28 @@ public abstract class AbstractDependencyGraphAction implements Action {
                                   Set<Dependency> copied) {
         
         /* Sort dependencies (by downstream task first) */
-        List<Dependency> sortedDeps = new ArrayList<Dependency>(deps);
-        Collections.sort(sortedDeps, DEP_COMPARATOR);
+        List<Dependency> updownstreamDeps = new ArrayList<Dependency>(deps);
+        Collections.sort(updownstreamDeps, DEP_COMPARATOR);
         
         /* create a list of all projects with up or downstream dependencies */
-        List<AbstractProject<?, ?>> depProjects = listUniqueProjectsInDependencies(sortedDeps);
+        List<AbstractProject<?, ?>> depProjects = listUniqueProjectsInDependencies(updownstreamDeps);
         Collections.sort(depProjects, PROJECT_COMPARATOR);
                 
         /* Sort sub-job dependencies (by upstream task first) */
-        List<Dependency> sortedSubjobs = new ArrayList<Dependency>(subJobs);
-        Collections.sort(sortedSubjobs, DEP_COMPARATOR_UPSTREAMFIRST);        
+        List<Dependency> subjobDeps = new ArrayList<Dependency>(subJobs);
+        Collections.sort(subjobDeps, DEP_COMPARATOR_UPSTREAMFIRST);        
         
         /* create a list of all subjobs and projects with subjobs  */
-        List<AbstractProject<?, ?>> subJobProjects = listUniqueProjectsInDependencies(sortedSubjob);        
+        List<AbstractProject<?, ?>> subJobProjects = listUniqueProjectsInDependencies(subjobDeps);        
         Collections.sort(subJobProjects, PROJECT_COMPARATOR);        
         
         /* Sort artifact-copy dependencies (by downstream task first) */
-        List<Dependency> sortedCopied = new ArrayList<Dependency>(copied);
-        Collections.sort(sortedCopied, DEP_COMPARATOR);
+        List<Dependency> copiedArtifactDeps = new ArrayList<Dependency>(copied);
+        Collections.sort(copiedArtifactDeps, DEP_COMPARATOR);
         /**/
                         
         /* create a list of all  copied artifacts and projects with copied artifacts  */
-        List<AbstractProject<?, ?>> artifactsCopiedProjects = listUniqueProjectsInDependencies(sortedCopied);                
+        List<AbstractProject<?, ?>> artifactsCopiedProjects = listUniqueProjectsInDependencies(copiedArtifactDeps);                
         Collections.sort(artifactsCopiedProjects, PROJECT_COMPARATOR);
         
 
@@ -180,9 +182,20 @@ public abstract class AbstractDependencyGraphAction implements Action {
         standaloneProjects.removeAll(artifactsCopiedProjects);
         Collections.sort(standaloneProjects, PROJECT_COMPARATOR);
        
-       
+        
         /**** Build the dot source file ****/       
-        StringBuilder builder = new StringBuilder("digraph {\n");
+        StringBuilder builder = new StringBuilder();
+        
+        CreateDigraphSourceCode(builder, standaloneProjects, depProjects, updownstreamDeps, subjobDeps, copiedArtifactDeps);
+        
+        return builder.toString();
+    }
+    
+    private void  CreateDigraphSourceCode(StringBuilder builder,  
+    List<AbstractProject<?, ?>> standaloneProjects, List<AbstractProject<?, ?>> depProjects,
+    List<Dependency> updownstreamDeps, List<Dependency> subjobDeps, List<Dependency> copiedArtifactDeps)    
+    {    
+        builder.append("digraph {\n");
         builder.append("node [shape=box, style=rounded];\n");
                 
         /**** First define all the objects and clusters ****/
@@ -193,11 +206,11 @@ public abstract class AbstractDependencyGraphAction implements Action {
         }
         
         // Sub jobs and their parents
-        dependencyToSubjobClusters(builder, sortedSubjobs);        
+        dependencyToSubjobClusters(builder, subjobDeps);        
         
         // up/downstream linked jobs 
         builder.append("subgraph clusterMain {\n");        
-        for (AbstractProject<?, ?> proj:depProjects) {
+        for (AbstractProject<?, ?> proj : depProjects) {
             builder.append(projectToNodeString(proj)).append(";\n");
         }
         builder.append("color=white;\n}\n");
@@ -205,24 +218,24 @@ public abstract class AbstractDependencyGraphAction implements Action {
         /****Now define links between objects ****/
                 
         // plain normal dependencies (up/downstream)
-        for (Dependency dep : sortedDeps) {
+        for (Dependency dep : updownstreamDeps) {
             builder.append(dependencyToEdgeString(dep));
             builder.append(";\n");
         }
         
         // subjob dependencies
-        for (Dependency dep : sortedSubjobs) {
+        for (Dependency dep : subjobDeps) {
             builder.append(dependencyToSubjobString(dep));
             builder.append(";\n");
         }
         
         //  copied artifact dependencies
-        for (Dependency dep : sortedCopied) {
+        for (Dependency dep : copiedArtifactDeps) {
             builder.append(dependencyToCopiedArtifactString(dep));
             builder.append(";\n");
         }
         
-        return builder.append("}").toString();
+        builder.append("}");           
     }
     
     private List<AbstractProject<?, ?>> listUniqueProjectsInDependencies(List<Dependency> dependencies)
