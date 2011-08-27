@@ -22,7 +22,10 @@
 
 package hudson.plugins.depgraph_view;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Lists;
 import hudson.Launcher;
 import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
@@ -34,13 +37,19 @@ import hudson.util.LogTaskListener;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,16 +83,6 @@ public abstract class AbstractDependencyGraphAction implements Action {
         }
     };
 
-    //  Lexicographic order of the dependencies
-    private static final Comparator<Dependency> DEP_COMPARATOR_UPSTREAMFIRST = new Comparator<Dependency>() {
-        @Override
-        public int compare(Dependency o1, Dependency o2) {
-            int up = (PROJECT_COMPARATOR.compare(o1.getUpstreamProject(),o2.getUpstreamProject()));
-            return up != 0 ? up : PROJECT_COMPARATOR
-                    .compare(o1.getDownstreamProject(),o2.getDownstreamProject());
-        }
-    };
-    
     // Compares projects by name
     private static final Comparator<AbstractProject<?,?>> PROJECT_COMPARATOR = new Comparator<AbstractProject<?,?>>() {
         @Override
@@ -91,6 +90,9 @@ public abstract class AbstractDependencyGraphAction implements Action {
             return o1.getFullDisplayName().compareTo(o2.getFullDisplayName());
         }
     };
+
+    private String subProjectColor = "#F0F0F0";
+    private String copyArtifactColor = "lightblue";
 
     // Data Structure to encode the content type and the -T argument for the graphviz tools
     protected static class SupportedImageType {
@@ -115,16 +117,16 @@ public abstract class AbstractDependencyGraphAction implements Action {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp)  throws IOException, ServletException, InterruptedException   {
         String path = req.getRestOfPath();
         if (path.startsWith("/graph.")) {
-            String extension = path.substring("/graph.".length());            
-            if (extension2Type.containsKey(extension.toLowerCase())) {            
+            String extension = path.substring("/graph.".length());
+            if (extension2Type.containsKey(extension.toLowerCase())) {
                 SupportedImageType imageType = extension2Type.get(extension.toLowerCase());
                 CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph());
-                String graphDot = generateDotText(calculateDeps.getProjects(), 
-                
-                calculateDeps.getDependencies(), 
-                calculateDeps.getSubJobs(), 
-                calculateDeps.getCopiedArtifacts());
-                
+                String graphDot = generateDotText(
+                        calculateDeps.getProjects(),
+                        calculateDeps.getDependencies(),
+                        calculateDeps.getSubJobs(),
+                        calculateDeps.getCopiedArtifacts());
+
                 rsp.setContentType(imageType.contentType);
                 if ("gv".equalsIgnoreCase(extension)) {
                     rsp.getWriter().append(graphDot).close();
@@ -137,171 +139,171 @@ public abstract class AbstractDependencyGraphAction implements Action {
             return;
         }
     }
-    
+
     /**
      * Generates the graphviz code for the given projects and dependencies
      * @param projects the nodes of the graph
      * @param deps the edges of the graph
      * @return graphviz code
      */
-    public String generateDotText(Set<AbstractProject<?,?>> projects, 
-                                  Set<Dependency> deps, 
-                                  Set<Dependency> subJobs, 
+    public String generateDotText(Set<AbstractProject<?,?>> projects,
+                                  Set<Dependency> deps,
+                                  ListMultimap<AbstractProject<?,?>, AbstractProject<?,?>> subJobs,
                                   Set<Dependency> copied) {
-        
+
         /* Sort dependencies (by downstream task first) */
         List<Dependency> updownstreamDeps = new ArrayList<Dependency>(deps);
         Collections.sort(updownstreamDeps, DEP_COMPARATOR);
-        
-        /* create a list of all projects with up or downstream dependencies */
-        List<AbstractProject<?, ?>> depProjects = listUniqueProjectsInDependencies(updownstreamDeps);
-        Collections.sort(depProjects, PROJECT_COMPARATOR);
-                
-        /* Sort sub-job dependencies (by upstream task first) */
-        List<Dependency> subjobDeps = new ArrayList<Dependency>(subJobs);
-        Collections.sort(subjobDeps, DEP_COMPARATOR_UPSTREAMFIRST);        
-        
-        /* create a list of all subjobs and projects with subjobs  */
-        List<AbstractProject<?, ?>> subJobProjects = listUniqueProjectsInDependencies(subjobDeps);        
-        Collections.sort(subJobProjects, PROJECT_COMPARATOR);        
-        
+
+        Set<AbstractProject<?, ?>> depProjects = listUniqueProjectsInDependencies(updownstreamDeps);
+
         /* Sort artifact-copy dependencies (by downstream task first) */
         List<Dependency> copiedArtifactDeps = new ArrayList<Dependency>(copied);
         Collections.sort(copiedArtifactDeps, DEP_COMPARATOR);
         /**/
-                        
-        /* create a list of all  copied artifacts and projects with copied artifacts  */
-        List<AbstractProject<?, ?>> artifactsCopiedProjects = listUniqueProjectsInDependencies(copiedArtifactDeps);                
-        Collections.sort(artifactsCopiedProjects, PROJECT_COMPARATOR);
-        
 
-        /* Find all projects wityhout dependencies or copied artifacts (stand-alone projects) */
+        Set<AbstractProject<?, ?>> artifactsCopiedProjects = listUniqueProjectsInDependencies(copiedArtifactDeps);
+
+        ArrayList<AbstractProject<?, ?>> projectsInDeps = Lists.newArrayList();
+        projectsInDeps.addAll(depProjects);
+        projectsInDeps.addAll(artifactsCopiedProjects);
+        Collections.sort(projectsInDeps, PROJECT_COMPARATOR);
+
+        /* Find all projects without dependencies or copied artifacts (stand-alone projects) */
         List<AbstractProject<?, ?>> standaloneProjects = new ArrayList<AbstractProject<?, ?>>(projects);
-        standaloneProjects.removeAll(depProjects);
-        standaloneProjects.removeAll(subJobProjects);         
-        standaloneProjects.removeAll(artifactsCopiedProjects);
+        standaloneProjects.removeAll(projectsInDeps);
         Collections.sort(standaloneProjects, PROJECT_COMPARATOR);
-       
-        
-        /**** Build the dot source file ****/       
-        StringBuilder builder = new StringBuilder();
-        
-        CreateDigraphSourceCode(builder, standaloneProjects, depProjects, updownstreamDeps, subjobDeps, copiedArtifactDeps);
-        
-        return builder.toString();
+
+
+
+        /**** Build the dot source file ****/
+        return createDigraphSourceCode(standaloneProjects, projectsInDeps, updownstreamDeps, subJobs, copiedArtifactDeps);
     }
-    
-    private void  CreateDigraphSourceCode(StringBuilder builder,  
-    List<AbstractProject<?, ?>> standaloneProjects, List<AbstractProject<?, ?>> depProjects,
-    List<Dependency> updownstreamDeps, List<Dependency> subjobDeps, List<Dependency> copiedArtifactDeps)    
-    {    
+
+    private String createDigraphSourceCode(List<AbstractProject<?, ?>> standaloneProjects, List<AbstractProject<?, ?>> depProjects,
+                                         List<Dependency> updownstreamDeps, ListMultimap<AbstractProject<?,?>, AbstractProject<?,?>> subJobs, List<Dependency> copiedArtifactDeps)
+    {
+        StringBuilder builder = new StringBuilder();
+
         builder.append("digraph {\n");
         builder.append("node [shape=box, style=rounded];\n");
-                
+
         /**** First define all the objects and clusters ****/
 
-        // Stuff not linked to other stuff
-        for (AbstractProject<?, ?> proj : standaloneProjects) {
-            builder.append(projectToNodeString(proj)).append(";\n");
-        }
-        
-        // Sub jobs and their parents
-        dependencyToSubjobClusters(builder, subjobDeps);        
-        
-        // up/downstream linked jobs 
-        builder.append("subgraph clusterMain {\n");        
+        // up/downstream linked jobs
+        builder.append("subgraph clusterMain {\n");
         for (AbstractProject<?, ?> proj : depProjects) {
-            builder.append(projectToNodeString(proj)).append(";\n");
+            if (subJobs.containsKey(proj)) {
+                builder.append(projectToNodeString(proj, subJobs.get(proj)));
+            }
+            else {
+                builder.append(projectToNodeString(proj));
+            }
+            builder.append(";\n");
         }
-        builder.append("color=white;\n}\n");
+        builder.append("color=invis;\n}\n");
 
+        // Stuff not linked to other stuff
+        builder.append("subgraph clusterStandalone {\n");
+        List<String> standaloneNames = Lists.newArrayList();
+        for (AbstractProject<?, ?> proj : standaloneProjects) {
+            builder.append(projectToNodeString(proj, subJobs.get(proj)));
+            builder.append(";\n");
+            standaloneNames.add(escapeString(proj.getFullDisplayName()));
+        }
+        if (!standaloneNames.isEmpty()) {
+            builder.append("edge[style=\"invisible\",dir=\"none\"];\n" + Joiner.on(" -> ").join(standaloneNames) + ";\n");
+        }
+        builder.append("color=invis;\n}\n");
+
+
+        builder.append("subgraph clusterLegend {\n");
+        builder.append("label=\"Legend:\" labelloc=t centered=false color=black node [shape=plaintext]")
+                .append("\"Dependency Graph\"\n")
+                .append("\"Copy Artifact\"\n")
+                .append("\"Sub-Project\"\n")
+                .append("node [style=invis]\n")
+                .append("a [label=\"\"] b [label=\"\"]")
+                .append(" c [fillcolor=" + escapeString(subProjectColor) + " style=filled fontcolor="
+                        + escapeString(subProjectColor) + "]\n")
+                .append("a -> b [style=invis]\n")
+                .append("{rank=same a -> \"Dependency Graph\" [color=black style=bold minlen=2]}\n")
+                .append("{rank=same b -> \"Copy Artifact\" [color=lightblue minlen=2]}\n")
+                .append("{rank=same c -> \"Sub-Project\" [ style=invis]}\n");
+        builder.append("\n}\n");
         /****Now define links between objects ****/
-                
+
         // plain normal dependencies (up/downstream)
         for (Dependency dep : updownstreamDeps) {
             builder.append(dependencyToEdgeString(dep));
             builder.append(";\n");
         }
-        
-        // subjob dependencies
-        for (Dependency dep : subjobDeps) {
-            builder.append(dependencyToSubjobString(dep));
-            builder.append(";\n");
-        }
-        
+
         //  copied artifact dependencies
         for (Dependency dep : copiedArtifactDeps) {
             builder.append(dependencyToCopiedArtifactString(dep));
             builder.append(";\n");
         }
-        
-        builder.append("}");           
-    }
-    
-    private List<AbstractProject<?, ?>> listUniqueProjectsInDependencies(List<Dependency> dependencies)
-    {
-        List<AbstractProject<?, ?>> listTemp = new ArrayList<AbstractProject<?, ?>>();
-        for (Dependency dependency : dependencies) 
-        {
-            listTemp.add(dependency.getUpstreamProject());
-            listTemp.add(dependency.getDownstreamProject());
+
+        if (!standaloneNames.isEmpty()) {
+            builder.append("edge[style=\"invisible\",dir=\"none\"];\n" + Joiner.on(" -> ").join(standaloneNames) + ";\n");
+            builder.append("edge[style=\"invisible\",dir=\"none\"];\n" + standaloneNames.get(standaloneNames.size() - 1) + " -> \"Dependency Graph\"");
         }
-         /* remove duplicates by passing through a hashset */
-        Set<AbstractProject<?, ?>> tempSet = new HashSet<AbstractProject<?, ?>>(listTemp);
-        return new ArrayList<AbstractProject<?, ?>>(tempSet);
+
+
+        builder.append("}");
+
+        return builder.toString();
     }
-    
-    
+
+    private Set<AbstractProject<?, ?>> listUniqueProjectsInDependencies(List<Dependency> dependencies)
+    {
+        Set<AbstractProject<?, ?>> set = new HashSet<AbstractProject<?, ?>>();
+        for (Dependency dependency : dependencies)
+        {
+            set.add(dependency.getUpstreamProject());
+            set.add(dependency.getDownstreamProject());
+        }
+        return set;
+    }
+
+
     private String projectToNodeString(AbstractProject<?, ?> proj) {
         return escapeString(proj.getFullDisplayName()) +
                 " [href=" +
-                escapeString(Hudson.getInstance().getRootUrlFromRequest() + proj.getUrl()) + "]";
+                getEscapedProjectUrl(proj) + "]";
     }
 
-    private void dependencyToSubjobClusters(StringBuilder builder, List<Dependency> sortedSubjobs)
-    {
-        int subjobcount = 1;
-        
-        builder.append("\n/** Subjob clusters **/\n");
-        
-        AbstractProject<?,?> currentUpstream = null;
-        for(Dependency subJob : sortedSubjobs)
-        {
-            if(currentUpstream != subJob.getUpstreamProject())
-            {
-                if(currentUpstream != null)
-                { 
-                    // not the first upstream (master) job
-                    builder.append("}\n\n");
-                }
-                builder.append("subgraph cluster_subjobs" + subjobcount++ + " {\n");
-                builder.append(projectToNodeString(subJob.getUpstreamProject()) + "\n");
-            }
-            builder.append("    " + projectToNodeString(subJob.getDownstreamProject()) + ";\n");
-            currentUpstream = subJob.getUpstreamProject();
+    private String projectToNodeString(AbstractProject<?, ?> proj, List<AbstractProject<?,?>> subprojects) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(escapeString(proj.getFullDisplayName()))
+                .append(" [shape=\"Mrecord\" href=")
+                .append(getEscapedProjectUrl(proj))
+                .append(" label=<<table border=\"0\" cellborder=\"0\" cellpadding=\"3\" bgcolor=\"white\">\n");
+        builder.append(getProjectRow(proj));
+        for (AbstractProject<?, ?> subproject : subprojects) {
+            builder.append(getProjectRow(subproject, "bgcolor=" + escapeString(subProjectColor))).append("\n");
         }
-        if(currentUpstream != null)
-        { 
-            //there were at least one upstream (master) jobs
-            builder.append("}\n\n");
-        }
-        
-        builder.append("\n");        
+        builder.append("</table>>]");
+        return builder.toString();
     }
-    
-    private String dependencyToEdgeString(Dependency dep) {
-        return escapeString(dep.getUpstreamProject().getFullDisplayName()) + " -> " +
-                escapeString(dep.getDownstreamProject().getFullDisplayName()) + " [ style=bold ] ";
+
+    private String getProjectRow(AbstractProject<?,?> project, String... extraColumnProperties) {
+        return String.format("<tr><td align=\"center\" href=%s %s>%s</td></tr>", getEscapedProjectUrl(project), Joiner.on(" ").join(extraColumnProperties),
+                project.getFullDisplayName());
     }
-    
+
+    private String getEscapedProjectUrl(AbstractProject<?, ?> proj) {
+        return escapeString(Hudson.getInstance().getRootUrlFromRequest() + proj.getUrl());
+    }
+
     private String dependencyToCopiedArtifactString(Dependency dep) {
-        return escapeString(dep.getDownstreamProject().getFullDisplayName()) + " -> " +
-                escapeString(dep.getUpstreamProject().getFullDisplayName()) + " [color=lightblue, dir=back]";
+        return dependencyToEdgeString(dep,"color=" + copyArtifactColor);
     }
 
-    private String dependencyToSubjobString(Dependency dep) {
+    private String dependencyToEdgeString(Dependency dep, String... options) {
         return escapeString(dep.getUpstreamProject().getFullDisplayName()) + " -> " +
-                escapeString(dep.getDownstreamProject().getFullDisplayName()) + "  ";
+                escapeString(dep.getDownstreamProject().getFullDisplayName()) + " [ " + Joiner.on(" ").join(options) +" ] ";
     }
 
     private String escapeString(String toEscape) {

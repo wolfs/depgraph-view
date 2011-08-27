@@ -19,29 +19,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
+
 package hudson.plugins.depgraph_view;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import hudson.Plugin;
 import hudson.model.AbstractProject;
-import hudson.model.TaskListener;
-import hudson.model.FreeStyleProject;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
+import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Item;
-import hudson.Plugin;
+import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig;
 import hudson.plugins.parameterizedtrigger.TriggerBuilder;
-import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.tasks.Builder;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -58,7 +56,7 @@ import java.util.logging.Logger;
 public class CalculateDeps {
     private static final Logger LOGGER = Logger.getLogger(CalculateDeps.class.getName());
     private final Set<Dependency> visitedDeps = new HashSet<Dependency>();
-    private final Set<Dependency> subJobs = new HashSet<Dependency>();
+    private final ListMultimap<AbstractProject<?,?>, AbstractProject<?,?>> subJobs = ArrayListMultimap.create();
     private final Set<Dependency> copiedArtifacts = new HashSet<Dependency>();
     private final Set<AbstractProject<?,?>> visitedProj = new HashSet<AbstractProject<?,?>>();
     private boolean calculated = false;
@@ -69,62 +67,64 @@ public class CalculateDeps {
         visitedProj.addAll(projects);
     }
 
-    public void calculateNodesAndDependencies()  throws IOException, ServletException, InterruptedException   {
+    public void calculateNodesAndDependencies()   {
         if (!calculated) {
             calculateNodesAndDependencies(visitedProj);
             calculated = true;
         }
     }
-            
+
     List<AbstractProject<?,?>> getCopiedArtifacts(AbstractProject<?,?> project) {
-    
+
         List<AbstractProject<?,?>> copiedArtifacts = new ArrayList<AbstractProject<?, ?>>();
-                
+
         Plugin copyartifact = Hudson.getInstance().getPlugin("copyartifact");
-        if (copyartifact != null) {                                                    
+        if (copyartifact != null) {
             if(project instanceof FreeStyleProject) {
-            
+
                 FreeStyleProject proj = (FreeStyleProject) project;
                 List<Builder> builders = proj.getBuilders();
-                
+
                 for (Builder builder : builders) {
-                
+
                     if (builder instanceof CopyArtifact) {
-                    
+
                         CopyArtifact caBuilder = (CopyArtifact) builder;
-                        String projectName = caBuilder.getProjectName();                    
+                        String projectName = caBuilder.getProjectName();
                         Hudson hudson = Hudson.getInstance();
-                        AbstractProject<?,?> projectFromName = hudson.getItemByFullName(projectName, AbstractProject.class);                                        
-                        
-                        copiedArtifacts.add( projectFromName );
+                        AbstractProject<?,?> projectFromName = hudson.getItemByFullName(projectName, AbstractProject.class);
+
+                        if (projectFromName != null) {
+                            copiedArtifacts.add( projectFromName );
+                        }
                     }
                 }
-            }        
+            }
         }
-        
+
         return copiedArtifacts;
     }
-    
-    List<AbstractProject<?,?>> getSubProjects(AbstractProject<?,?> project) throws IOException, ServletException, InterruptedException   {
+
+    List<AbstractProject<?,?>> getSubProjects(AbstractProject<?,?> project)   {
         List<AbstractProject<?,?>> subProjects = new ArrayList<AbstractProject<?, ?>>();
-                
+
         Plugin parameterizedTrigger = Hudson.getInstance().getPlugin("parameterized-trigger");
-        if (parameterizedTrigger != null) {                                 
-        
+        if (parameterizedTrigger != null) {
+
             if(project instanceof FreeStyleProject) {
-            
+
                 FreeStyleProject proj = (FreeStyleProject) project;
                 List<Builder> builders = proj.getBuilders();
-                
+
                 for (Builder builder : builders) {
-                
+
                     if (builder instanceof TriggerBuilder) {
-                    
+
                         TriggerBuilder tBuilder = (TriggerBuilder) builder;
                         for (BlockableBuildTriggerConfig config : tBuilder.getConfigs()) {
-                        
+
                             for (AbstractProject<?,?> abstractProject : config.getProjectList(null)) {
-                                subProjects.add( abstractProject );                        
+                                subProjects.add( abstractProject );
                             }
                         }
                     }
@@ -133,36 +133,23 @@ public class CalculateDeps {
         }
         return subProjects;
     }
-    
-    private void calculateNodesAndDependencies(Set<AbstractProject<?, ?>> fromProjects)  throws IOException, ServletException, InterruptedException   {
+
+    private void calculateNodesAndDependencies(Set<AbstractProject<?, ?>> fromProjects)   {
         Set<AbstractProject<?,?>> newProj = new HashSet<AbstractProject<?, ?>>();
-        for (AbstractProject<?,?> project : fromProjects) {           
+        for (AbstractProject<?,?> project : fromProjects) {
             if (project.hasPermission(Item.READ)) {
                 // dependencies
                 newProj.addAll(
                         addNewDependencies(dependencyGraph.getUpstreamDependencies(project),true));
                 newProj.addAll(
                         addNewDependencies(dependencyGraph.getDownstreamDependencies(project),false));
-                
-                Set<Dependency> subProjectDeps  = new HashSet<Dependency>();
-                
-                for(AbstractProject<?,?> subProject : getSubProjects(project)) {
-                    subProjectDeps.add(new Dependency(project, subProject));                                
-                }
-                 
-                // Sub-project dependencies
-                newProj.addAll(
-                        addNewSubJobs(subProjectDeps,true));
-                newProj.addAll(
-                        addNewSubJobs(subProjectDeps,false));      
-                
+
+                subJobs.putAll(project, getSubProjects(project));
+
                 List<AbstractProject<?,?>> copiedArtifactsTemp = getCopiedArtifacts(project);
                 for(AbstractProject<?,?> copiedProject : copiedArtifactsTemp) {
-                    if(copiedProject == null || project == null) {
-                        continue;
-                    }
-                    copiedArtifacts.add(new Dependency(project, copiedProject));                                
-                }                                        
+                    copiedArtifacts.add(new Dependency(copiedProject, project));
+                }
             }
         }
         visitedProj.addAll(newProj);
@@ -171,26 +158,10 @@ public class CalculateDeps {
         }
     }
 
-    private Set<AbstractProject<?, ?>> addNewSubJobs(Collection<Dependency> dependencies, boolean isUpstream) {
-        
-        Set<AbstractProject<?,?>> newProj = new HashSet<AbstractProject<?, ?>>();
-        
-        for (Dependency dep : dependencies) {
-            AbstractProject<?,?> projectToAdd = isUpstream ? dep.getUpstreamProject() : dep.getDownstreamProject();
-            if (projectToAdd.hasPermission(Item.READ) && !subJobs.contains(dep)) {
-                subJobs.add(dep);
-                if (!visitedProj.contains(projectToAdd)) {
-                    newProj.add(projectToAdd);
-                }
-            }
-        }
-        return newProj;
-    }
-
     private Set<AbstractProject<?, ?>> addNewDependencies(Collection<Dependency> dependencies, boolean isUpstream) {
-        
+
         Set<AbstractProject<?,?>> newProj = new HashSet<AbstractProject<?, ?>>();
-        
+
         for (Dependency dep : dependencies) {
             AbstractProject<?,?> projectToAdd = isUpstream ? dep.getUpstreamProject() : dep.getDownstreamProject();
             if (projectToAdd.hasPermission(Item.READ) && !visitedDeps.contains(dep)) {
@@ -207,7 +178,7 @@ public class CalculateDeps {
      * Calculates the connected components if necessary
      * @return projects (nodes) in the connected components
      */
-    public Set<AbstractProject<?, ?>> getProjects()  throws IOException, ServletException, InterruptedException   {
+    public Set<AbstractProject<?, ?>> getProjects()   {
         if (!calculated) {
             calculateNodesAndDependencies();
         }
@@ -218,24 +189,24 @@ public class CalculateDeps {
      * Calculates the connected components if necessary
      * @return dependencies (edges) in the connected components
      */
-    public Set<Dependency> getDependencies()  throws IOException, ServletException, InterruptedException   {
+    public Set<Dependency> getDependencies()   {
         if (!calculated) {
             calculateNodesAndDependencies();
         }
         return Collections.unmodifiableSet(visitedDeps);
     }
 
-    public Set<Dependency> getSubJobs()  throws IOException, ServletException, InterruptedException   {
+    public ListMultimap<AbstractProject<?,?>,AbstractProject<?,?>> getSubJobs()   {
         if (!calculated) {
             calculateNodesAndDependencies();
         }
-        return Collections.unmodifiableSet(subJobs);
+        return subJobs;
     }
-    
-    public Set<Dependency> getCopiedArtifacts()  throws IOException, ServletException, InterruptedException   {
+
+    public Set<Dependency> getCopiedArtifacts()   {
         if (!calculated) {
             calculateNodesAndDependencies();
         }
         return Collections.unmodifiableSet(copiedArtifacts);
-    }                   
+    }
 }
