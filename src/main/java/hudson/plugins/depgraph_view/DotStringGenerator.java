@@ -137,6 +137,7 @@ public class DotStringGenerator {
 
         builder.append("digraph {\n");
         builder.append("node [shape=box, style=rounded];\n");
+        builder.append("rankdir=LR;\n");
 
         /**** First define all the objects and clusters ****/
 
