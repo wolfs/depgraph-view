@@ -39,7 +39,7 @@
 				// this case it returns the 'labelText' member that we set on each
 				// connection in the 'init' method below.
 				ConnectionOverlays : [ [ "Arrow", {
-					location : 0.8,
+					location : 1.0,
 					foldback:0.5
 				} ]
 				]
@@ -92,7 +92,7 @@
 						var yPosition = (level * 120) + top;
 						// iterate jobs per level
 						jQuery.each(val, function(i, jobName) {
-							jQuery('<div>' + jobName + ':'+(xPosition)+'/'+yPosition+':'+clusterBreite+'</div>').attr('id', jobName).addClass('window').css('top', yPosition).css('left', xPosition).appendTo(window.paper);
+							jQuery('<div>' + jobName + '</div>').attr('id', jobName).addClass('window').css('top', yPosition).css('left', xPosition).appendTo(window.paper);
 							xPosition += xMove;
 							
 							// definitions for drag/drop connections 
@@ -115,7 +115,7 @@
 					// creates/defines the look and feel of the loaded connections: red="dep", green="copy"
 					var connection;
 					if("copy" == edge["type"]){
-						connection = jsPlumb.connect({ source : from, target : to, anchors : [ "BottomCenter", "TopCenter" ], paintStyle:{lineWidth : 2, strokeStyle: window.depview_colorcopy}, connector:"Bezier"});  	
+						connection = jsPlumb.connect({ source : from, target : to, anchors : [ "BottomCenter", "TopCenter" ], paintStyle:{lineWidth : 2, strokeStyle: window.depview_colorcopy}, connector:"Straight"});  	
 					}else{
 						connection = jsPlumb.connect({ source : from, target : to, anchors : [ "BottomCenter", "TopCenter" ], paintStyle:{lineWidth : 2, strokeStyle: window.depview_colordep}, connector:"Straight"}); 
 						// only allow deletion of "dep" connections

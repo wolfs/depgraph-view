@@ -58,7 +58,7 @@ import com.google.common.collect.ImmutableMap;
 public abstract class AbstractDependencyGraphAction implements Action {
     private final Logger LOGGER = Logger.getLogger(Logger.class.getName());
     
-    private static final Pattern EDGE_PATTERN = Pattern.compile("/edge/(.*)/(.*[^/])(.*)");
+    private static final Pattern EDGE_PATTERN = Pattern.compile("/(.*)/(.*[^/])(.*)");
 
     /**
      * Maps the extension of the requested file to the content type and the

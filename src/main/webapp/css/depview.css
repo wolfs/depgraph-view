@@ -1,3 +1,8 @@
+#paper {
+	position: relative;
+	top: -200px;
+}
+
 .window {
 	border: 1px solid #346789;
 	box-shadow: 2px 2px 19px #aaa;
@@ -7,7 +12,7 @@
 	-moz-border-radius: 0.5em;
 	border-radius: 0.5em;
 	opacity: 0.8;
-	filter: alpha(opacity =   80);
+	filter: alpha(opacity =     80);
 	width: 10em;
 	height: 5em;
 	line-height: 5em;
@@ -27,7 +32,7 @@
 	-webkit-box-shadow: 2px 2px 19px #444;
 	-moz-box-shadow: 2px 2px 19px #444;
 	opacity: 0.6;
-	filter: alpha(opacity =   60);
+	filter: alpha(opacity =     60);
 }
 
 .active {
@@ -66,5 +71,5 @@
 	z-index: 21;
 	border: 1px dotted gray;
 	opacity: 0.8;
-	filter: alpha(opacity =   80);
+	filter: alpha(opacity =     80);
 }
