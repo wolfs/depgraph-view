@@ -22,19 +22,16 @@
 
 package hudson.plugins.depgraph_view;
 
-import com.google.common.collect.ImmutableMap;
 import hudson.Launcher;
+import hudson.model.Action;
 import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
+import hudson.plugins.depgraph_view.operations.DeleteEdgeOperation;
+import hudson.plugins.depgraph_view.operations.PutEdgeOperation;
 import hudson.util.LogTaskListener;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +39,16 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Basic action for creating a Dot-Image of the DependencyGraph
@@ -50,6 +57,8 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractDependencyGraphAction implements Action {
     private final Logger LOGGER = Logger.getLogger(Logger.class.getName());
+    
+    private static final Pattern EDGE_PATTERN = Pattern.compile("/edge/(.*)/(.*[^/])(.*)");
 
     /**
      * Maps the extension of the requested file to the content type and the
@@ -60,7 +69,8 @@ public abstract class AbstractDependencyGraphAction implements Action {
                     "png",SupportedImageType.of("image/png", "png"),
                     "svg",SupportedImageType.of("image/svg", "svg"),
                     "map",SupportedImageType.of("image/cmapx", "cmapx"),
-                    "gv",SupportedImageType.of("text/plain", "gv") // Special case - do no processing
+                    "gv",SupportedImageType.of("text/plain", "gv"), // Special case - do no processing
+                    "json",SupportedImageType.of("text/plain", "json")
             );
 
     // Data Structure to encode the content type and the -T argument for the graphviz tools
@@ -79,29 +89,55 @@ public abstract class AbstractDependencyGraphAction implements Action {
         }
 
     }
-
+    
+    public void doEdge(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+        String path = req.getRestOfPath();
+        Matcher m = EDGE_PATTERN.matcher(path);
+        if (m.find( )) {
+          final String sourceJobName = m.group(1);
+          final String targetJobName = m.group(2);
+          if ("PUT".equalsIgnoreCase(req.getMethod())) {
+             new PutEdgeOperation(sourceJobName, targetJobName).perform();
+          } else if ("DELETE".equalsIgnoreCase(req.getMethod())) {
+             new DeleteEdgeOperation(sourceJobName, targetJobName).perform();
+          }
+        }
+        rsp.sendError(HttpServletResponse.SC_NO_CONTENT);
+        return;
+    }
+    
     /**
      * graph.{png,gv,...} is mapped to the corresponding output
      */
-    public void doDynamic(StaplerRequest req, StaplerResponse rsp)  throws IOException, ServletException, InterruptedException   {
+    public void doDynamic(StaplerRequest req, StaplerResponse rsp)  throws IOException, ServletException, InterruptedException {
         String path = req.getRestOfPath();
         if (path.startsWith("/graph.")) {
             String extension = path.substring("/graph.".length());
             if (extension2Type.containsKey(extension.toLowerCase())) {
                 SupportedImageType imageType = extension2Type.get(extension.toLowerCase());
                 CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph());
-                DotStringGenerator dotStringGenerator = new DotStringGenerator(
-                        calculateDeps.getProjects(),
-                        calculateDeps.getDependencies(),
-                        calculateDeps.getSubJobs(),
-                        calculateDeps.getCopiedArtifacts());
-                String graphDot = dotStringGenerator.generate();
-
-                rsp.setContentType(imageType.contentType);
-                if ("gv".equalsIgnoreCase(extension)) {
-                    rsp.getWriter().append(graphDot).close();
-                } else {
-                    runDot(rsp.getOutputStream(), new ByteArrayInputStream(graphDot.getBytes()), imageType.dotType);
+                if ("json".equalsIgnoreCase(extension)) {
+                    JsonStringGenerator jsonStringGenerator = new JsonStringGenerator(
+                            calculateDeps.getProjects(),
+                            calculateDeps.getDependencies(),
+                            calculateDeps.getSubJobs(),
+                            calculateDeps.getCopiedArtifacts());
+                    String graphJson = jsonStringGenerator.generate();
+                    rsp.getWriter().append(graphJson).close();
+                }else{
+                    DotStringGenerator dotStringGenerator = new DotStringGenerator(
+                            calculateDeps.getProjects(),
+                            calculateDeps.getDependencies(),
+                            calculateDeps.getSubJobs(),
+                            calculateDeps.getCopiedArtifacts());
+                    String graphDot = dotStringGenerator.generate();
+    
+                    rsp.setContentType(imageType.contentType);
+                    if ("gv".equalsIgnoreCase(extension)) {
+                        rsp.getWriter().append(graphDot).close();
+                    } else {
+                        runDot(rsp.getOutputStream(), new ByteArrayInputStream(graphDot.getBytes()), imageType.dotType);
+                    }
                 }
             }
         } else {
@@ -110,7 +146,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
         }
     }
 
-
+    
     /**
      * Execute the dot commando with given input and output stream
      * @param type the parameter for the -T option of the graphviz tools

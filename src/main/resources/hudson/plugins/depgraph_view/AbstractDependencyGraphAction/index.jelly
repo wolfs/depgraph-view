@@ -25,6 +25,10 @@
     <st:include it="${it.parentObject}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>${%Dependency Graph}</h1>
+      <l:tabBar>
+            <l:tab name="graphviz" active="${true}" href="." />
+            <l:tab name="jsplumb" active="${false}"  href="./jsplumb" />
+      </l:tabBar>
       <img src="graph.png" lazymap="graph.map"/>
       <p><a href="graph.gv">${%Graph in graphviz format}</a></p>
     </l:main-panel>
