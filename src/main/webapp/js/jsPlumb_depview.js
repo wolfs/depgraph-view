@@ -115,7 +115,9 @@
 					// creates/defines the look and feel of the loaded connections: red="dep", green="copy"
 					var connection;
 					if("copy" == edge["type"]){
-						connection = jsPlumb.connect({ source : from, target : to, anchors : [ "BottomCenter", "TopCenter" ], paintStyle:{lineWidth : 2, strokeStyle: window.depview_colorcopy}, connector:"Straight"});  	
+						connection = jsPlumb.connect({ source : from, target : to, anchors : [ "BottomCenter", "TopCenter" ], paintStyle:{lineWidth : 2, strokeStyle: window.depview_colorcopy}, connector:"Straight",
+													   overlays:[[ "Label", { label: "copy", id: from+'.'+to } ]]
+													});
 					}else{
 						connection = jsPlumb.connect({ source : from, target : to, anchors : [ "BottomCenter", "TopCenter" ], paintStyle:{lineWidth : 2, strokeStyle: window.depview_colordep}, connector:"Straight"}); 
 						// only allow deletion of "dep" connections
