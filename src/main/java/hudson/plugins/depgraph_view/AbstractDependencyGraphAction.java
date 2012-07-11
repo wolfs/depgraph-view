@@ -39,6 +39,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,7 +102,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
                 if ("gv".equalsIgnoreCase(extension)) {
                     rsp.getWriter().append(graphDot).close();
                 } else {
-                    runDot(rsp.getOutputStream(), new ByteArrayInputStream(graphDot.getBytes()), imageType.dotType);
+                    runDot(rsp.getOutputStream(), new ByteArrayInputStream(graphDot.getBytes(Charset.forName("UTF-8"))), imageType.dotType);
                 }
             }
         } else {
@@ -122,7 +123,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
         Launcher launcher = Hudson.getInstance().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
         try {
             launcher.launch()
-                    .cmds(dotPath,"-T" + type)
+                    .cmds(dotPath,"-T" + type, "-Gcharset=UTF-8")
                     .stdin(input)
                     .stdout(output).start().join();
         } catch (InterruptedException e) {
