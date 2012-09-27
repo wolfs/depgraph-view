@@ -22,11 +22,15 @@
 
 package hudson.plugins.depgraph_view;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
 import hudson.Launcher;
 import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
 import hudson.util.LogTaskListener;
@@ -41,6 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,16 +57,19 @@ import java.util.logging.Logger;
 public abstract class AbstractDependencyGraphAction implements Action {
     private final Logger LOGGER = Logger.getLogger(Logger.class.getName());
 
+    private static final SupportedImageType PNG = SupportedImageType.of("image/png", "png");
+
+    private static final SupportedImageType GV = SupportedImageType.of("text/plain", "gv");
     /**
      * Maps the extension of the requested file to the content type and the
      * argument for the -T option of the graphviz tools
      */
     protected static final ImmutableMap<String, SupportedImageType> extension2Type =
             ImmutableMap.of(
-                    "png",SupportedImageType.of("image/png", "png"),
+                    "png", PNG,
                     "svg",SupportedImageType.of("image/svg", "svg"),
                     "map",SupportedImageType.of("image/cmapx", "cmapx"),
-                    "gv",SupportedImageType.of("text/plain", "gv") // Special case - do no processing
+                    "gv", GV // Special case - do no processing
             );
 
     // Data Structure to encode the content type and the -T argument for the graphviz tools
@@ -85,29 +93,38 @@ public abstract class AbstractDependencyGraphAction implements Action {
      * graph.{png,gv,...} is mapped to the corresponding output
      */
     public void doDynamic(StaplerRequest req, StaplerResponse rsp)  throws IOException, ServletException, InterruptedException   {
+        String graphDot;
         String path = req.getRestOfPath();
         if (path.startsWith("/graph.")) {
-            String extension = path.substring("/graph.".length());
-            if (extension2Type.containsKey(extension.toLowerCase())) {
-                SupportedImageType imageType = extension2Type.get(extension.toLowerCase());
-                CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph());
-                DotStringGenerator dotStringGenerator = new DotStringGenerator(
-                        calculateDeps.getProjects(),
-                        calculateDeps.getDependencies(),
-                        calculateDeps.getSubJobs(),
-                        calculateDeps.getCopiedArtifacts());
-                String graphDot = dotStringGenerator.generate();
-
-                rsp.setContentType(imageType.contentType);
-                if ("gv".equalsIgnoreCase(extension)) {
-                    rsp.getWriter().append(graphDot).close();
-                } else {
-                    runDot(rsp.getOutputStream(), new ByteArrayInputStream(graphDot.getBytes(Charset.forName("UTF-8"))), imageType.dotType);
-                }
-            }
+            CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph());
+            DotStringGenerator dotStringGenerator = new DotStringGenerator(
+                    calculateDeps.getProjects(),
+                    calculateDeps.getDependencies(),
+                    calculateDeps.getSubJobs(),
+                    calculateDeps.getCopiedArtifacts());
+            graphDot = dotStringGenerator.generate();
+        } else
+        if (path.startsWith("/legend.")) {
+            DotStringGenerator dotStringGenerator = new DotStringGenerator(
+                    Collections.<AbstractProject<?, ?>>emptySet(),
+                    Collections.<DependencyGraph.Dependency>emptySet(),
+                    ArrayListMultimap.<AbstractProject<?, ?>, AbstractProject<?, ?>>create(),
+                    Collections.<DependencyGraph.Dependency>emptySet()
+            );
+            graphDot = dotStringGenerator.generateLegend();
         } else {
             rsp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
             return;
+        }
+
+        SupportedImageType imageType = extension2Type.get(path.substring(path.lastIndexOf('.')+1));
+        if (imageType==null)    imageType = PNG;
+
+        rsp.setContentType(imageType.contentType);
+        if (imageType==GV) {
+            rsp.getWriter().append(graphDot).close();
+        } else {
+            runDot(rsp.getOutputStream(), new ByteArrayInputStream(graphDot.getBytes(Charset.forName("UTF-8"))), imageType.dotType);
         }
     }
 

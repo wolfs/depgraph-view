@@ -26,7 +26,11 @@
     <l:main-panel>
       <h1>${%Dependency Graph}</h1>
       <img src="graph.png" lazymap="graph.map"/>
-      <p><a href="graph.gv">${%Graph in graphviz format}</a></p>
+      <p>
+        <a href="graph.gv">${%Graph in graphviz format}</a>
+      </p><p>
+        <a href="legend.png">${%Legend}</a>
+      </p>
     </l:main-panel>
   </l:layout>
 </j:jelly>
