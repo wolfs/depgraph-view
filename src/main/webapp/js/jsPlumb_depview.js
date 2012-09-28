@@ -128,6 +128,9 @@
 									type : 'DELETE',
 									success : function(response) {
 										jsPlumb.detach(conn);
+									},
+									error: function (request, status, error) {
+								        alert(status+": "+error);
 									}
 								});
 							}
@@ -141,6 +144,9 @@
 						   type: 'PUT',
 						   success: function( response ) {
 //							   alert('Load was performed.');
+						   },
+						   error: function (request, status, error) {
+						        alert(request.responseText);
 						   }
 					});
 					// allow deletion of newly created connection
@@ -151,7 +157,10 @@
 								type : 'DELETE',
 								success : function(response) {
 									jsPlumb.detach(conn);
-								}
+								},
+								error: function (request, status, error) {
+							        alert(request.responseText);
+							    }
 							});
 						}
 					});

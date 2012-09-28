@@ -28,6 +28,7 @@ import static com.google.common.base.Functions.compose;
 import static com.google.common.collect.Lists.transform;
 import hudson.model.DependencyGraph;
 import hudson.model.AbstractProject;
+import hudson.plugins.depgraph_view.DepNode.CyclicJobsException;
 import hudson.plugins.depgraph_view.DepNode.Edge;
 
 import java.util.ArrayList;
@@ -80,12 +81,12 @@ public class JsonStringGenerator {
         }
     };
 
-    private static final Function<String, String> ESCAPE = new Function<String, String>() {
-        @Override
-        public String apply(String from) {
-            return escapeString(from);
-        }
-    };
+//    private static final Function<String, String> ESCAPE = new Function<String, String>() {
+//        @Override
+//        public String apply(String from) {
+//            return escapeString(from);
+//        }
+//    };
 
     private List<AbstractProject<?, ?>> standaloneProjects;
     private List<AbstractProject<?, ?>> projectsInDeps;
@@ -132,7 +133,7 @@ public class JsonStringGenerator {
     public String generate() {
 
         // Stuff not linked to other stuff
-        List<String> standaloneNames = transform(standaloneProjects, compose(ESCAPE, PROJECT_NAME_FUNCTION));
+        List<String> standaloneNames = transform(standaloneProjects, PROJECT_NAME_FUNCTION);
         standaloneNames.removeAll(projectsInDeps);
 
         List<Map<String, String>> edges = new ArrayList<Map<String, String>>();
@@ -151,6 +152,7 @@ public class JsonStringGenerator {
             getOrCreateDepNode(name);
         }
 
+        // a cluster is a group of jobs having at least one connection to each other through edges
         List<Set<DepNode>> clusters = Lists.newArrayList();
 
         for (DepNode node : jobs.values()) {
@@ -258,7 +260,4 @@ public class JsonStringGenerator {
         return set;
     }
 
-    private static String escapeString(String toEscape) {
-        return toEscape;
-    }
 }
