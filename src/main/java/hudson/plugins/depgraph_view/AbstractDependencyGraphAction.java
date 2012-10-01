@@ -22,16 +22,26 @@
 
 package hudson.plugins.depgraph_view;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import hudson.Launcher;
-import hudson.model.Action;
 import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
+import hudson.plugins.depgraph_view.model.CopyArtifactEdgeProvider;
+import hudson.plugins.depgraph_view.model.DependencyGraphEdgeProvider;
+import hudson.plugins.depgraph_view.model.Graph;
+import hudson.plugins.depgraph_view.model.GraphCalculator;
 import hudson.plugins.depgraph_view.operations.DeleteEdgeOperation;
 import hudson.plugins.depgraph_view.operations.PutEdgeOperation;
 import hudson.util.LogTaskListener;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,14 +52,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import com.google.common.collect.ImmutableMap;
-
 /**
  * Basic action for creating a Dot-Image of the DependencyGraph
  *
@@ -57,7 +59,7 @@ import com.google.common.collect.ImmutableMap;
  */
 public abstract class AbstractDependencyGraphAction implements Action {
     private final Logger LOGGER = Logger.getLogger(Logger.class.getName());
-    
+
     private static final Pattern EDGE_PATTERN = Pattern.compile("/(.*)/(.*[^/])(.*)");
 
     /**
@@ -89,7 +91,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
         }
 
     }
-    
+
     public void doEdge(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         String path = req.getRestOfPath();
         Matcher m = EDGE_PATTERN.matcher(path);
@@ -103,14 +105,14 @@ public abstract class AbstractDependencyGraphAction implements Action {
                  new DeleteEdgeOperation(sourceJobName, targetJobName).perform();
               }
             } catch (Exception e) {
-                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);    
+                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
         } else {
-            rsp.sendError(HttpServletResponse.SC_NOT_FOUND);            
+            rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
         return;
     }
-    
+
     /**
      * graph.{png,gv,...} is mapped to the corresponding output
      */
@@ -120,23 +122,21 @@ public abstract class AbstractDependencyGraphAction implements Action {
             String extension = path.substring("/graph.".length());
             if (extension2Type.containsKey(extension.toLowerCase())) {
                 SupportedImageType imageType = extension2Type.get(extension.toLowerCase());
-                CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph());
+                GraphCalculator graphCalculator = new GraphCalculator(GraphCalculator.abstractProjectSetToProjectNodeSet(getProjectsForDepgraph()), ImmutableList.of(new DependencyGraphEdgeProvider(), new CopyArtifactEdgeProvider()));
+                Graph graph = graphCalculator.generateGraph();
                 if ("json".equalsIgnoreCase(extension)) {
-                    JsonStringGenerator jsonStringGenerator = new JsonStringGenerator(
-                            calculateDeps.getProjects(),
-                            calculateDeps.getDependencies(),
-                            calculateDeps.getSubJobs(),
-                            calculateDeps.getCopiedArtifacts());
+                    JsonStringGenerator jsonStringGenerator = new JsonStringGenerator(graph);
                     String graphJson = jsonStringGenerator.generate();
                     rsp.getWriter().append(graphJson).close();
-                }else{
+                }  else {
+                    CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph());
                     DotStringGenerator dotStringGenerator = new DotStringGenerator(
                             calculateDeps.getProjects(),
                             calculateDeps.getDependencies(),
                             calculateDeps.getSubJobs(),
                             calculateDeps.getCopiedArtifacts());
                     String graphDot = dotStringGenerator.generate();
-    
+
                     rsp.setContentType(imageType.contentType);
                     if ("gv".equalsIgnoreCase(extension)) {
                         rsp.getWriter().append(graphDot).close();
@@ -151,7 +151,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
         }
     }
 
-    
+
     /**
      * Execute the dot commando with given input and output stream
      * @param type the parameter for the -T option of the graphviz tools

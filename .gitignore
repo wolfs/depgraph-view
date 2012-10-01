@@ -4,3 +4,6 @@
 /.project
 /*.iml
 /.settings
+.idea
+*.ipr
+*.iws

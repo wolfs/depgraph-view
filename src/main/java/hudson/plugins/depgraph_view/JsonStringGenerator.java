@@ -24,12 +24,21 @@
 
 package hudson.plugins.depgraph_view;
 
-import static com.google.common.base.Functions.compose;
-import static com.google.common.collect.Lists.transform;
-import hudson.model.DependencyGraph;
+import com.google.common.base.Function;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 import hudson.model.AbstractProject;
-import hudson.plugins.depgraph_view.DepNode.CyclicJobsException;
-import hudson.plugins.depgraph_view.DepNode.Edge;
+import hudson.model.DependencyGraph;
+import hudson.plugins.depgraph_view.model.Edge;
+import hudson.plugins.depgraph_view.model.Graph;
+import hudson.plugins.depgraph_view.model.ProjectNode;
+import net.sf.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,27 +51,26 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
+import static com.google.common.collect.Lists.transform;
 
 /**
  * @author Dominik Bartholdi (imod)
  */
 public class JsonStringGenerator {
     // Lexicographic order of the dependencies
-    private static final Comparator<DependencyGraph.Dependency> DEP_COMPARATOR = new Comparator<DependencyGraph.Dependency>() {
+    private static final Comparator<Edge> DEP_COMPARATOR = new Comparator<Edge>() {
         @Override
-        public int compare(DependencyGraph.Dependency o1, DependencyGraph.Dependency o2) {
-            int down = (PROJECT_COMPARATOR.compare(o1.getDownstreamProject(), o2.getDownstreamProject()));
-            return down != 0 ? down : PROJECT_COMPARATOR.compare(o1.getUpstreamProject(), o2.getUpstreamProject());
+        public int compare(Edge o1, Edge o2) {
+            int down = (NODE_COMPARATOR.compare(o1.target, o2.target));
+            return down != 0 ? down : NODE_COMPARATOR.compare(o1.source, o2.source);
+        }
+    };
+
+    // Compares projects by name
+    private static final Comparator<ProjectNode> NODE_COMPARATOR = new Comparator<ProjectNode>() {
+        @Override
+        public int compare(ProjectNode o1, ProjectNode o2) {
+            return PROJECT_COMPARATOR.compare(o1.getProject(), o2.getProject());
         }
     };
 
@@ -74,10 +82,10 @@ public class JsonStringGenerator {
         }
     };
 
-    private static final Function<AbstractProject<?, ?>, String> PROJECT_NAME_FUNCTION = new Function<AbstractProject<?, ?>, String>() {
+    private static final Function<ProjectNode, String> PROJECT_NAME_FUNCTION = new Function<ProjectNode, String>() {
         @Override
-        public String apply(AbstractProject<?, ?> from) {
-            return from.getFullDisplayName();
+        public String apply(ProjectNode from) {
+            return from.getName();
         }
     };
 
@@ -88,38 +96,31 @@ public class JsonStringGenerator {
 //        }
 //    };
 
-    private List<AbstractProject<?, ?>> standaloneProjects;
-    private List<AbstractProject<?, ?>> projectsInDeps;
-    private List<DependencyGraph.Dependency> updownstreamDeps;
+    private ArrayList<ProjectNode> standaloneProjects;
+    private List<ProjectNode> projectsInDeps;
+    private List<Edge> edges;
     private ListMultimap<AbstractProject<?, ?>, AbstractProject<?, ?>> subJobs;
-    private List<DependencyGraph.Dependency> copiedArtifactDeps;
 
-    public JsonStringGenerator(Set<AbstractProject<?, ?>> projects, Set<DependencyGraph.Dependency> deps,
-            ListMultimap<AbstractProject<?, ?>, AbstractProject<?, ?>> subJobs, Set<DependencyGraph.Dependency> copied) {
-        this.subJobs = subJobs;
+    public JsonStringGenerator(Graph graph) {
+        // TODO: Build subjobs
+        this.subJobs = ArrayListMultimap.create();
+
+
+        this.edges = new ArrayList<Edge>();
+        this.edges.addAll(graph.getEdges());
 
         /* Sort dependencies (by downstream task first) */
-        updownstreamDeps = new ArrayList<DependencyGraph.Dependency>(deps);
-        Collections.sort(updownstreamDeps, DEP_COMPARATOR);
-
-        Set<AbstractProject<?, ?>> depProjects = listUniqueProjectsInDependencies(updownstreamDeps);
-
-        /* Sort artifact-copy dependencies (by downstream task first) */
-        copiedArtifactDeps = new ArrayList<DependencyGraph.Dependency>(copied);
-        Collections.sort(copiedArtifactDeps, DEP_COMPARATOR);
-        /**/
-
-        Set<AbstractProject<?, ?>> artifactsCopiedProjects = listUniqueProjectsInDependencies(copiedArtifactDeps);
-
-        projectsInDeps = Lists.newArrayList();
-        projectsInDeps.addAll(depProjects);
-        projectsInDeps.addAll(artifactsCopiedProjects);
-        Collections.sort(projectsInDeps, PROJECT_COMPARATOR);
 
         /* Find all projects without dependencies or copied artifacts (stand-alone projects) */
-        standaloneProjects = new ArrayList<AbstractProject<?, ?>>(projects);
-        standaloneProjects.removeAll(projectsInDeps);
-        Collections.sort(standaloneProjects, PROJECT_COMPARATOR);
+        standaloneProjects = new ArrayList<ProjectNode>();
+        standaloneProjects.addAll(graph.getIsolatedNodes());
+        Collections.sort(standaloneProjects, NODE_COMPARATOR);
+
+        projectsInDeps = Lists.newArrayList();
+        projectsInDeps.addAll(graph.getNodes());
+        projectsInDeps.removeAll(standaloneProjects);
+        Collections.sort(projectsInDeps, NODE_COMPARATOR);
+
 
     }
 
@@ -127,24 +128,18 @@ public class JsonStringGenerator {
 
     /**
      * Generates the json for the given projects and dependencies
-     * 
+     *
      * @return json model
      */
     public String generate() {
 
         // Stuff not linked to other stuff
         List<String> standaloneNames = transform(standaloneProjects, PROJECT_NAME_FUNCTION);
-        standaloneNames.removeAll(projectsInDeps);
 
         List<Map<String, String>> edges = new ArrayList<Map<String, String>>();
 
-        for (DependencyGraph.Dependency dep : updownstreamDeps) {
-            addEdge(edges, "dep", dep);
-        }
-
-        // copied artifact dependencies
-        for (DependencyGraph.Dependency dep : copiedArtifactDeps) {
-            addEdge(edges, "copy", dep);
+        for (Edge edge : this.edges) {
+            addEdge(edges, edge);
         }
 
         for (String name : standaloneNames) {
@@ -212,34 +207,34 @@ public class JsonStringGenerator {
         }
         clusterSet.add(node);
         // traverse all nodes that belong to the parent
-        for (Edge edge : node.getParents()) {
+        for (DepNode.Edge edge : node.getParents()) {
             buildCluster(clusterSet, edge.getEndpoint());
         }
-        for (Edge edge : node.getChilds()) {
+        for (DepNode.Edge edge : node.getChilds()) {
             buildCluster(clusterSet, edge.getEndpoint());
         }
     }
 
     /**
      * Adds an edge between the jobs of the dependency.
-     * 
+     *
      * @param edges
      *            the edges to add the dependency to (results in the json)
-     * @param dep
+     * @param edge
      *            the dependency to to be added
      */
-    private void addEdge(List<Map<String, String>> edges, String type, DependencyGraph.Dependency dep) {
-        Map<String, String> edge = new HashMap<String, String>();
-        final String fullDisplayNameFrom = dep.getUpstreamProject().getFullDisplayName();
-        final String fullDisplayNameTo = dep.getDownstreamProject().getFullDisplayName();
-        edge.put("from", fullDisplayNameFrom);
-        edge.put("to", fullDisplayNameTo);
-        edge.put("type", type);
-        edges.add(edge);
+    private void addEdge(List<Map<String, String>> edges, Edge edge) {
+        Map<String, String> jsonEdge = new HashMap<String, String>();
+        final String fullDisplayNameFrom = edge.source.getName();
+        final String fullDisplayNameTo = edge.target.getName();
+        jsonEdge.put("from", fullDisplayNameFrom);
+        jsonEdge.put("to", fullDisplayNameTo);
+        jsonEdge.put("type", edge.getType());
+        edges.add(jsonEdge);
 
         final DepNode from = getOrCreateDepNode(fullDisplayNameFrom);
         final DepNode to = getOrCreateDepNode(fullDisplayNameTo);
-        Edge.addEdge(from, to);
+        DepNode.Edge.addEdge(from, to);
     }
 
     private DepNode getOrCreateDepNode(final String name) {
