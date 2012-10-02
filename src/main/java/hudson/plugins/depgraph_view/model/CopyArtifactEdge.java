@@ -12,4 +12,9 @@ public class CopyArtifactEdge extends Edge {
     public String getType() {
         return "copy";
     }
+
+    @Override
+    public String getColor() {
+        return "lightblue";
+    }
 }

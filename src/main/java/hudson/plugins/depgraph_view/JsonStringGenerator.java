@@ -120,8 +120,6 @@ public class JsonStringGenerator {
         projectsInDeps.addAll(graph.getNodes());
         projectsInDeps.removeAll(standaloneProjects);
         Collections.sort(projectsInDeps, NODE_COMPARATOR);
-
-
     }
 
     Map<String, DepNode> jobs = new HashMap<String, DepNode>();

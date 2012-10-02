@@ -20,6 +20,10 @@ public abstract class Edge {
 
     public abstract String getType();
 
+    public String getColor() {
+        return "black";
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

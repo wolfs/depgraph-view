@@ -22,7 +22,7 @@
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:sv="/lib/sectioned_view" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt">
-	<link rel="stylesheet" href="${rootURL}/plugin/depgraph-view/css/depview.css"></link>
+	<link rel="stylesheet" href="${request.contextPath}/plugin/depgraph-view/css/depview.css"></link>
 	<l:layout title="${it.title}">
 		<st:include it="${it.parentObject}" page="sidepanel.jelly" />
 		<l:main-panel>

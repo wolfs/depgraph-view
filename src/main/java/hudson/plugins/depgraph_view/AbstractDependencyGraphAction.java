@@ -129,12 +129,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
                     String graphJson = jsonStringGenerator.generate();
                     rsp.getWriter().append(graphJson).close();
                 }  else {
-                    CalculateDeps calculateDeps = new CalculateDeps(getProjectsForDepgraph());
-                    DotStringGenerator dotStringGenerator = new DotStringGenerator(
-                            calculateDeps.getProjects(),
-                            calculateDeps.getDependencies(),
-                            calculateDeps.getSubJobs(),
-                            calculateDeps.getCopiedArtifacts());
+                    DotStringGenerator dotStringGenerator = new DotStringGenerator(graph);
                     String graphDot = dotStringGenerator.generate();
 
                     rsp.setContentType(imageType.contentType);
