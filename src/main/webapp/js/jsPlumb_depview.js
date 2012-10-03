@@ -9,7 +9,7 @@
 	window.depview = {
 		init : function() {
 			jsPlumb.importDefaults({
-				Connector : "Bezier", // Straight, Flowchart, Straight, Bezier
+				Connector : ["StateMachine", { curviness: 10 }],// Straight, Flowchart, Straight, Bezier
 				// default drag options
 				DragOptions : {
 					cursor : 'pointer',
@@ -27,13 +27,13 @@
 				} ], [ "Dot", {
 					radius : 6
 				} ] ],
-				
+
 				// connector line 2px
-				PaintStyle : { 
-					lineWidth : 2, 
+				PaintStyle : {
+					lineWidth : 2,
 					strokeStyle : window.depview_colordepnew,
-					joinstyle:"round"}, 
-				
+					joinstyle:"round"},
+
 				// the overlays to decorate each connection with. note that the
 				// label overlay uses a function to generate the label text; in
 				// this case it returns the 'labelText' member that we set on each
@@ -43,18 +43,18 @@
 					foldback:0.5
 				} ]
 				]
-				
+
 			});
-			
+
 			jQuery.getJSON('graph.json', function(data) {
 
 				var top = 120;
-				
-				var breite = 80; 
+
+				var breite = 80;
 				var space = 20;
-				
+
 				var xOverall = 0;
-				
+
 				var clusters = data["clusters"];
 				// iterate clusters
 				jQuery.each(clusters, function(i, cluster) {
@@ -65,17 +65,17 @@
 							maxJobsOnLevel = val.length;
 						}
 					});
-					
+
 					var additionalSpace = (maxJobsOnLevel - 1) * space;
 					var clusterBreite = (maxJobsOnLevel * breite) + additionalSpace;
-					
+
 					var xCluster = clusterBreite + xOverall;
-					
+
 					// iterate levels of cluster
 					jQuery.each(cluster, function(key, val) {
 						var level = parseInt(key);
 						var nrOfLevelJobs = val.length;
-						
+
 						var xPosition = xCluster;
 						var xMove = 0;
 						var spaceBetweenJobs = 0;
@@ -86,28 +86,33 @@
 							xPosition = xCluster - clusterBreite;
 							var spareSpaceOnLevel = clusterBreite - ((nrOfLevelJobs -1) * breite);
 							spaceBetweenJobs = spareSpaceOnLevel / nrOfSpaces;
-							xMove = spaceBetweenJobs + breite;  
+							xMove = spaceBetweenJobs + breite;
 						}
-						
+
 						var yPosition = (level * 120) + top;
 						// iterate jobs per level
 						jQuery.each(val, function(i, jobName) {
-							jQuery('<div>' + jobName + '</div>').attr('id', jobName).addClass('window').css('top', yPosition).css('left', xPosition).appendTo(window.paper);
+							jQuery('<div>' + jobName + '<div class="ep"/></div>').addClass('window').attr('id', jobName).css('top', yPosition).css('left', xPosition).appendTo(window.paper);
 							xPosition += xMove;
-							
-							// definitions for drag/drop connections 
-							jsPlumb.makeSource(jobName, {
-								anchor : "BottomCenter",
-							});
-							jsPlumb.makeTarget(jobName, {
-								anchor : "TopCenter",
-							});
-							
+
+
 						});
 					});
-					xOverall = xCluster + breite +(space * 2);
+                    // definitions for drag/drop connections
+                    jQuery(".ep").each(function(idx, current) {
+                        var p = jQuery(current).parent()
+                        jsPlumb.makeSource(current, {
+                            anchor : "Continuous",
+                            parent: p,
+                        });
+                    })
+                    jsPlumb.makeTarget(jsPlumb.getSelector('.window'), {
+                        anchor : "Continuous",
+                    });
+
+                    xOverall = xCluster + breite +(space * 2);
 				});
-				
+
 				var edges = data["edges"];
 				jQuery.each(edges, function(i, edge) {
 					from = getJobDiv(edge["from"]);
@@ -115,11 +120,11 @@
 					// creates/defines the look and feel of the loaded connections: red="dep", green="copy"
 					var connection;
 					if("copy" == edge["type"]){
-						connection = jsPlumb.connect({ source : from, target : to, anchors : [ "BottomCenter", "TopCenter" ], paintStyle:{lineWidth : 2, strokeStyle: window.depview_colorcopy}, connector:"Straight",
+						connection = jsPlumb.connect({ source : from, target : to, paintStyle:{lineWidth : 2, strokeStyle: window.depview_colorcopy},
 													   overlays:[[ "Label", { label: "copy", id: from+'.'+to } ]]
 													});
 					}else{
-						connection = jsPlumb.connect({ source : from, target : to, anchors : [ "BottomCenter", "TopCenter" ], paintStyle:{lineWidth : 2, strokeStyle: window.depview_colordep}, connector:"Straight"}); 
+						connection = jsPlumb.connect({ source : from, target : to, paintStyle:{lineWidth : 2, strokeStyle: window.depview_colordep}});
 						// only allow deletion of "dep" connections
 						connection.bind("click", function(conn) {
 							if(confirm('delete connection: '+ conn.sourceId +" -> "+conn.targetId+'?')){
@@ -137,7 +142,7 @@
 						});
 					}
 				});
-				
+
 				jsPlumb.bind("jsPlumbConnection", function(info) {
 					jQuery.ajax({
 						   url: 'edge/'+info.sourceId +'/'+info.targetId,
@@ -165,12 +170,12 @@
 						}
 					});
 				});
-				
-				
+
+
 				// make all the window divs draggable
 				jsPlumb.draggable(jsPlumb.getSelector(".window"));
-				
-				
+
+
 			});
 		}
 	};
@@ -185,7 +190,7 @@ function getJobDiv(jobName) {
 jsPlumb.bind("ready", function() {
 	// chrome fix.
 	document.onselectstart = function () { return false; };
-	
+
 	jsPlumb.setRenderMode(jsPlumb.SVG);
 	depview.init();
 });

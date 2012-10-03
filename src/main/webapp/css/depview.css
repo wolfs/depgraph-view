@@ -35,6 +35,14 @@
 	filter: alpha(opacity =     60);
 }
 
+.ep {
+    float:right;
+    width:1em;
+    height:1em;
+    background-color:#994466;
+    cursor:pointer;
+}
+
 .active {
 	border: 1px dotted green;
 }

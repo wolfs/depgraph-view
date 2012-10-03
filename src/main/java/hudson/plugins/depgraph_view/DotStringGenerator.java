@@ -146,7 +146,6 @@ public class DotStringGenerator {
         builder.append(cluster("Standalone", standaloneProjectNodes(standaloneNames),"color=invis;"));
 
 
-        builder.append(cluster("Legend", legend()));
         /****Now define links between objects ****/
 
         // edges
@@ -163,6 +162,19 @@ public class DotStringGenerator {
 
         builder.append("}");
 
+        return builder.toString();
+    }
+
+    public String generateLegend() {
+        /**** Build the dot source file ****/
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("digraph {\n");
+        builder.append("node [shape=box, style=rounded];\n");
+
+        builder.append(cluster("Legend", legend()));
+
+        builder.append("}");
         return builder.toString();
     }
 

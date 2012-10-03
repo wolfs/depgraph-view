@@ -23,11 +23,15 @@
 package hudson.plugins.depgraph_view;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
 import hudson.Launcher;
 import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
 import hudson.plugins.depgraph_view.model.CopyArtifactEdgeProvider;
@@ -46,7 +50,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -62,17 +68,21 @@ public abstract class AbstractDependencyGraphAction implements Action {
 
     private static final Pattern EDGE_PATTERN = Pattern.compile("/(.*)/(.*[^/])(.*)");
 
+    private static final SupportedImageType PNG = SupportedImageType.of("image/png", "png");
+
+    private static final SupportedImageType GV = SupportedImageType.of("text/plain", "gv");
+    private static final SupportedImageType JSON = SupportedImageType.of("text/plain", "json");
     /**
      * Maps the extension of the requested file to the content type and the
      * argument for the -T option of the graphviz tools
      */
     protected static final ImmutableMap<String, SupportedImageType> extension2Type =
             ImmutableMap.of(
-                    "png",SupportedImageType.of("image/png", "png"),
+                    "png", PNG,
                     "svg",SupportedImageType.of("image/svg", "svg"),
                     "map",SupportedImageType.of("image/cmapx", "cmapx"),
-                    "gv",SupportedImageType.of("text/plain", "gv"), // Special case - do no processing
-                    "json",SupportedImageType.of("text/plain", "json")
+                    "json",JSON,
+                    "gv", GV // Special case - do no processing
             );
 
     // Data Structure to encode the content type and the -T argument for the graphviz tools
@@ -90,6 +100,25 @@ public abstract class AbstractDependencyGraphAction implements Action {
             return new SupportedImageType(contentType, dotType);
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SupportedImageType that = (SupportedImageType) o;
+
+            if (!contentType.equals(that.contentType)) return false;
+            if (!dotType.equals(that.dotType)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = contentType.hashCode();
+            result = 31 * result + dotType.hashCode();
+            return result;
+        }
     }
 
     public void doEdge(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
@@ -118,31 +147,34 @@ public abstract class AbstractDependencyGraphAction implements Action {
      */
     public void doDynamic(StaplerRequest req, StaplerResponse rsp)  throws IOException, ServletException, InterruptedException {
         String path = req.getRestOfPath();
+        String graphString;
         if (path.startsWith("/graph.")) {
             String extension = path.substring("/graph.".length());
-            if (extension2Type.containsKey(extension.toLowerCase())) {
-                SupportedImageType imageType = extension2Type.get(extension.toLowerCase());
-                GraphCalculator graphCalculator = new GraphCalculator(GraphCalculator.abstractProjectSetToProjectNodeSet(getProjectsForDepgraph()), ImmutableList.of(new DependencyGraphEdgeProvider(), new CopyArtifactEdgeProvider()));
-                Graph graph = graphCalculator.generateGraph();
-                if ("json".equalsIgnoreCase(extension)) {
-                    JsonStringGenerator jsonStringGenerator = new JsonStringGenerator(graph);
-                    String graphJson = jsonStringGenerator.generate();
-                    rsp.getWriter().append(graphJson).close();
-                }  else {
-                    DotStringGenerator dotStringGenerator = new DotStringGenerator(graph);
-                    String graphDot = dotStringGenerator.generate();
-
-                    rsp.setContentType(imageType.contentType);
-                    if ("gv".equalsIgnoreCase(extension)) {
-                        rsp.getWriter().append(graphDot).close();
-                    } else {
-                        runDot(rsp.getOutputStream(), new ByteArrayInputStream(graphDot.getBytes()), imageType.dotType);
-                    }
-                }
+            GraphCalculator graphCalculator = new GraphCalculator(GraphCalculator.abstractProjectSetToProjectNodeSet(getProjectsForDepgraph()), ImmutableList.of(new DependencyGraphEdgeProvider(), new CopyArtifactEdgeProvider()));
+            Graph graph = graphCalculator.generateGraph();
+            if ("json".equalsIgnoreCase(extension)) {
+                JsonStringGenerator jsonStringGenerator = new JsonStringGenerator(graph);
+                graphString = jsonStringGenerator.generate();
+            }  else {
+                DotStringGenerator dotStringGenerator = new DotStringGenerator(graph);
+                graphString = dotStringGenerator.generate();
             }
+        } else if (path.startsWith("/legend.")) {
+            DotStringGenerator dotStringGenerator = new DotStringGenerator(new Graph());
+            graphString = dotStringGenerator.generateLegend();
         } else {
             rsp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
             return;
+        }
+
+        SupportedImageType imageType = extension2Type.get(path.substring(path.lastIndexOf('.')+1));
+        if (imageType==null)    imageType = PNG;
+
+        rsp.setContentType(imageType.contentType);
+        if (imageType==GV || imageType == JSON) {
+            rsp.getWriter().append(graphString).close();
+        } else {
+            runDot(rsp.getOutputStream(), new ByteArrayInputStream(graphString.getBytes(Charset.forName("UTF-8"))), imageType.dotType);
         }
     }
 
@@ -158,7 +190,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
         Launcher launcher = Hudson.getInstance().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
         try {
             launcher.launch()
-                    .cmds(dotPath,"-T" + type)
+                    .cmds(dotPath,"-T" + type, "-Gcharset=UTF-8")
                     .stdin(input)
                     .stdout(output).start().join();
         } catch (InterruptedException e) {
