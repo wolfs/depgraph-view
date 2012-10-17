@@ -36,7 +36,7 @@ import com.google.common.collect.Sets;
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.plugins.depgraph_view.model.Edge;
-import hudson.plugins.depgraph_view.model.Graph;
+import hudson.plugins.depgraph_view.model.MyGraph;
 import hudson.plugins.depgraph_view.model.ProjectNode;
 import net.sf.json.JSONObject;
 
@@ -101,7 +101,7 @@ public class JsonStringGenerator {
     private List<Edge> edges;
     private ListMultimap<AbstractProject<?, ?>, AbstractProject<?, ?>> subJobs;
 
-    public JsonStringGenerator(Graph graph) {
+    public JsonStringGenerator(MyGraph graph) {
         // TODO: Build subjobs
         this.subJobs = ArrayListMultimap.create();
 

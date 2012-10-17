@@ -19,18 +19,18 @@ public class GraphCalculator {
     private Set<ProjectNode> initialProjects;
     private Set<EdgeProvider> edgeProviders;
 
-    public GraphCalculator(Iterable<ProjectNode> initialProjects, Iterable<EdgeProvider> edgeProviders) {
+    public GraphCalculator(Iterable<ProjectNode> initialProjects, Iterable<? extends EdgeProvider> edgeProviders) {
         this.initialProjects = Sets.newHashSet(initialProjects);
         this.edgeProviders = Sets.newHashSet(edgeProviders);
     }
 
-    public Graph generateGraph() {
-        Graph graph = new Graph();
+    public MyGraph generateGraph() {
+        MyGraph graph = new MyGraph();
         extendGraph(graph, initialProjects);
         return graph;
     }
 
-    private void extendGraph(Graph graph, Set<ProjectNode> fromProjects) {
+    private void extendGraph(MyGraph graph, Set<ProjectNode> fromProjects) {
         Set<ProjectNode> newProj = Sets.newHashSet();
         List<Edge> newEdges = Lists.newArrayList();
         for (ProjectNode projectNode : fromProjects) {

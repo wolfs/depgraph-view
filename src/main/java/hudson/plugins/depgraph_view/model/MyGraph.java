@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * @author wolfs
  */
-public class Graph {
+public class MyGraph {
 
     private Set<Edge> edges = Sets.newHashSet();
     private Set<ProjectNode> nodes = Sets.newHashSet();

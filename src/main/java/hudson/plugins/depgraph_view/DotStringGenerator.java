@@ -33,7 +33,7 @@ import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.model.Edge;
-import hudson.plugins.depgraph_view.model.Graph;
+import hudson.plugins.depgraph_view.model.MyGraph;
 import hudson.plugins.depgraph_view.model.ProjectNode;
 
 import java.util.ArrayList;
@@ -107,7 +107,7 @@ public class DotStringGenerator {
         return this;
     }
 
-    public DotStringGenerator(Graph graph) {
+    public DotStringGenerator(MyGraph graph) {
         this.subJobs = ArrayListMultimap.create();
 
         /* Sort dependencies (by downstream task first) */
