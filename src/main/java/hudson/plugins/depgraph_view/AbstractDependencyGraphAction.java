@@ -30,8 +30,8 @@ import hudson.model.Action;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
 import hudson.plugins.depgraph_view.model.CopyArtifactEdgeProvider;
+import hudson.plugins.depgraph_view.model.DependencyGraph;
 import hudson.plugins.depgraph_view.model.DependencyGraphEdgeProvider;
-import hudson.plugins.depgraph_view.model.MyGraph;
 import hudson.plugins.depgraph_view.model.GraphCalculator;
 import hudson.plugins.depgraph_view.operations.DeleteEdgeOperation;
 import hudson.plugins.depgraph_view.operations.PutEdgeOperation;
@@ -100,7 +100,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
         String graphString;
         if (path.startsWith("/graph.")) {
             GraphCalculator graphCalculator = new GraphCalculator(GraphCalculator.abstractProjectSetToProjectNodeSet(getProjectsForDepgraph()), ImmutableList.of(new DependencyGraphEdgeProvider(), new CopyArtifactEdgeProvider()));
-            MyGraph graph = graphCalculator.generateGraph();
+            DependencyGraph graph = graphCalculator.generateGraph();
             if (imageType == SupportedImageType.JSON) {
                 JsonStringGenerator jsonStringGenerator = new JsonStringGenerator(graph);
                 graphString = jsonStringGenerator.generate();
@@ -109,7 +109,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
                 graphString = dotStringGenerator.generate();
             }
         } else if (path.startsWith("/legend.")) {
-            DotStringGenerator dotStringGenerator = new DotStringGenerator(new MyGraph());
+            DotStringGenerator dotStringGenerator = new DotStringGenerator(new DependencyGraph());
             graphString = dotStringGenerator.generateLegend();
         } else {
             rsp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);

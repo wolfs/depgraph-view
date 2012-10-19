@@ -25,27 +25,19 @@
 package hudson.plugins.depgraph_view;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-import hudson.model.AbstractProject;
-import hudson.model.DependencyGraph;
+import hudson.plugins.depgraph_view.model.DependencyGraph;
 import hudson.plugins.depgraph_view.model.Edge;
-import hudson.plugins.depgraph_view.model.MyGraph;
-import hudson.plugins.depgraph_view.model.ProjectNode;
 import net.sf.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -56,70 +48,10 @@ import static com.google.common.collect.Lists.transform;
 /**
  * @author Dominik Bartholdi (imod)
  */
-public class JsonStringGenerator {
-    // Lexicographic order of the dependencies
-    private static final Comparator<Edge> DEP_COMPARATOR = new Comparator<Edge>() {
-        @Override
-        public int compare(Edge o1, Edge o2) {
-            int down = (NODE_COMPARATOR.compare(o1.target, o2.target));
-            return down != 0 ? down : NODE_COMPARATOR.compare(o1.source, o2.source);
-        }
-    };
+public class JsonStringGenerator extends AbstractGraphStringGenerator {
 
-    // Compares projects by name
-    private static final Comparator<ProjectNode> NODE_COMPARATOR = new Comparator<ProjectNode>() {
-        @Override
-        public int compare(ProjectNode o1, ProjectNode o2) {
-            return PROJECT_COMPARATOR.compare(o1.getProject(), o2.getProject());
-        }
-    };
-
-    // Compares projects by name
-    private static final Comparator<AbstractProject<?, ?>> PROJECT_COMPARATOR = new Comparator<AbstractProject<?, ?>>() {
-        @Override
-        public int compare(AbstractProject<?, ?> o1, AbstractProject<?, ?> o2) {
-            return o1.getFullDisplayName().compareTo(o2.getFullDisplayName());
-        }
-    };
-
-    private static final Function<ProjectNode, String> PROJECT_NAME_FUNCTION = new Function<ProjectNode, String>() {
-        @Override
-        public String apply(ProjectNode from) {
-            return from.getName();
-        }
-    };
-
-//    private static final Function<String, String> ESCAPE = new Function<String, String>() {
-//        @Override
-//        public String apply(String from) {
-//            return escapeString(from);
-//        }
-//    };
-
-    private ArrayList<ProjectNode> standaloneProjects;
-    private List<ProjectNode> projectsInDeps;
-    private List<Edge> edges;
-    private ListMultimap<AbstractProject<?, ?>, AbstractProject<?, ?>> subJobs;
-
-    public JsonStringGenerator(MyGraph graph) {
-        // TODO: Build subjobs
-        this.subJobs = ArrayListMultimap.create();
-
-
-        this.edges = new ArrayList<Edge>();
-        this.edges.addAll(graph.getEdges());
-
-        /* Sort dependencies (by downstream task first) */
-
-        /* Find all projects without dependencies or copied artifacts (stand-alone projects) */
-        standaloneProjects = new ArrayList<ProjectNode>();
-        standaloneProjects.addAll(graph.getIsolatedNodes());
-        Collections.sort(standaloneProjects, NODE_COMPARATOR);
-
-        projectsInDeps = Lists.newArrayList();
-        projectsInDeps.addAll(graph.getNodes());
-        projectsInDeps.removeAll(standaloneProjects);
-        Collections.sort(projectsInDeps, NODE_COMPARATOR);
+    public JsonStringGenerator(DependencyGraph graph) {
+        super(graph);
     }
 
     Map<String, DepNode> jobs = new HashMap<String, DepNode>();
@@ -243,14 +175,4 @@ public class JsonStringGenerator {
         }
         return node;
     }
-
-    private Set<AbstractProject<?, ?>> listUniqueProjectsInDependencies(List<DependencyGraph.Dependency> dependencies) {
-        Set<AbstractProject<?, ?>> set = new HashSet<AbstractProject<?, ?>>();
-        for (DependencyGraph.Dependency dependency : dependencies) {
-            set.add(dependency.getUpstreamProject());
-            set.add(dependency.getDownstreamProject());
-        }
-        return set;
-    }
-
 }

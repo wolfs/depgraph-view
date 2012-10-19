@@ -26,19 +26,12 @@ package hudson.plugins.depgraph_view;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
 import hudson.model.AbstractProject;
-import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
+import hudson.plugins.depgraph_view.model.DependencyGraph;
 import hudson.plugins.depgraph_view.model.Edge;
-import hudson.plugins.depgraph_view.model.MyGraph;
 import hudson.plugins.depgraph_view.model.ProjectNode;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,39 +42,7 @@ import static com.google.common.collect.Lists.transform;
 /**
  * @author wolfs
  */
-public class DotStringGenerator {
-    // Lexicographic order of the dependencies
-    private static final Comparator<Edge> DEP_COMPARATOR = new Comparator<Edge>() {
-        @Override
-        public int compare(Edge o1, Edge o2) {
-            int down = (NODE_COMPARATOR.compare(o1.target, o2.target));
-            return down != 0 ? down : NODE_COMPARATOR.compare(o1.source, o2.source);
-        }
-    };
-
-    // Compares projects by name
-    private static final Comparator<ProjectNode> NODE_COMPARATOR = new Comparator<ProjectNode>() {
-        @Override
-        public int compare(ProjectNode o1, ProjectNode o2) {
-            return PROJECT_COMPARATOR.compare(o1.getProject(), o2.getProject());
-        }
-    };
-
-    // Compares projects by name
-    private static final Comparator<AbstractProject<?, ?>> PROJECT_COMPARATOR = new Comparator<AbstractProject<?, ?>>() {
-        @Override
-        public int compare(AbstractProject<?, ?> o1, AbstractProject<?, ?> o2) {
-            return o1.getFullDisplayName().compareTo(o2.getFullDisplayName());
-        }
-    };
-
-    private static final Function<ProjectNode, String> PROJECT_NAME_FUNCTION = new Function<ProjectNode, String>() {
-        @Override
-        public String apply(ProjectNode from) {
-            return from.getName();
-        }
-    };
-
+public class DotStringGenerator extends AbstractGraphStringGenerator {
     private static final Function<String, String> ESCAPE = new Function<String, String>() {
         @Override
         public String apply(String from) {
@@ -91,11 +52,6 @@ public class DotStringGenerator {
 
     private String subProjectColor = "#F0F0F0";
     private String copyArtifactColor = "lightblue";
-    private ArrayList<ProjectNode> standaloneProjects;
-    private List<ProjectNode> projectsInDeps;
-    private List<DependencyGraph.Dependency> updownstreamDeps;
-    private ListMultimap<ProjectNode, ProjectNode> subJobs;
-    private List<Edge> edges;
 
     public DotStringGenerator subProjectColor(String color) {
         subProjectColor = color;
@@ -107,22 +63,8 @@ public class DotStringGenerator {
         return this;
     }
 
-    public DotStringGenerator(MyGraph graph) {
-        this.subJobs = ArrayListMultimap.create();
-
-        /* Sort dependencies (by downstream task first) */
-        edges = Lists.newArrayList(graph.getEdges());
-        Collections.sort(edges, DEP_COMPARATOR);
-
-        /* Find all projects without dependencies or copied artifacts (stand-alone projects) */
-        standaloneProjects = new ArrayList<ProjectNode>();
-        standaloneProjects.addAll(graph.getIsolatedNodes());
-        Collections.sort(standaloneProjects, NODE_COMPARATOR);
-
-        projectsInDeps = Lists.newArrayList();
-        projectsInDeps.addAll(graph.getNodes());
-        projectsInDeps.removeAll(standaloneProjects);
-        Collections.sort(projectsInDeps, NODE_COMPARATOR);
+    public DotStringGenerator(DependencyGraph graph) {
+        super(graph);
     }
 
     /**
@@ -229,10 +171,10 @@ public class DotStringGenerator {
         return builder.toString();
     }
 
-    private Set<AbstractProject<?, ?>> listUniqueProjectsInDependencies(List<DependencyGraph.Dependency> dependencies)
+    private Set<AbstractProject<?, ?>> listUniqueProjectsInDependencies(List<hudson.model.DependencyGraph.Dependency> dependencies)
     {
         Set<AbstractProject<?, ?>> set = new HashSet<AbstractProject<?, ?>>();
-        for (DependencyGraph.Dependency dependency : dependencies)
+        for (hudson.model.DependencyGraph.Dependency dependency : dependencies)
         {
             set.add(dependency.getUpstreamProject());
             set.add(dependency.getDownstreamProject());
@@ -270,11 +212,11 @@ public class DotStringGenerator {
         return escapeString(Hudson.getInstance().getRootUrl() + proj.getProject().getUrl());
     }
 
-    private String dependencyToCopiedArtifactString(DependencyGraph.Dependency dep) {
+    private String dependencyToCopiedArtifactString(hudson.model.DependencyGraph.Dependency dep) {
         return dependencyToEdgeString(dep, "color=" + copyArtifactColor);
     }
 
-    private String dependencyToEdgeString(DependencyGraph.Dependency dep, String... options) {
+    private String dependencyToEdgeString(hudson.model.DependencyGraph.Dependency dep, String... options) {
         return escapeString(dep.getUpstreamProject().getFullDisplayName()) + " -> " +
                 escapeString(dep.getDownstreamProject().getFullDisplayName()) + " [ " + Joiner.on(" ").join(options) +" ] ";
     }

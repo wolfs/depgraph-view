@@ -24,13 +24,14 @@ public class GraphCalculator {
         this.edgeProviders = Sets.newHashSet(edgeProviders);
     }
 
-    public MyGraph generateGraph() {
-        MyGraph graph = new MyGraph();
+    public DependencyGraph generateGraph() {
+        DependencyGraph graph = new DependencyGraph();
+        graph.addNodes(initialProjects);
         extendGraph(graph, initialProjects);
         return graph;
     }
 
-    private void extendGraph(MyGraph graph, Set<ProjectNode> fromProjects) {
+    private void extendGraph(DependencyGraph graph, Set<ProjectNode> fromProjects) {
         Set<ProjectNode> newProj = Sets.newHashSet();
         List<Edge> newEdges = Lists.newArrayList();
         for (ProjectNode projectNode : fromProjects) {
