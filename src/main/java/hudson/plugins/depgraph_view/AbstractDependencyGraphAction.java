@@ -141,7 +141,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
         Launcher launcher = Hudson.getInstance().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
         try {
             launcher.launch()
-                    .cmds(dotPath,"-T" + type, "-Gcharset=UTF-8")
+                    .cmds(dotPath,"-T" + type, "-Gcharset=UTF-8", "-q1")
                     .stdin(input)
                     .stdout(output)
                     .start().join();
