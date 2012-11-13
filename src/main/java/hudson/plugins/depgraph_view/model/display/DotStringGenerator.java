@@ -22,19 +22,17 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.depgraph_view;
+package hudson.plugins.depgraph_view.model.display;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import hudson.model.AbstractProject;
+import com.google.common.collect.ListMultimap;
 import hudson.model.Hudson;
-import hudson.plugins.depgraph_view.model.DependencyGraph;
-import hudson.plugins.depgraph_view.model.Edge;
-import hudson.plugins.depgraph_view.model.ProjectNode;
+import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
+import hudson.plugins.depgraph_view.model.graph.Edge;
+import hudson.plugins.depgraph_view.model.graph.ProjectNode;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static com.google.common.base.Functions.compose;
 import static com.google.common.collect.Lists.transform;
@@ -42,7 +40,7 @@ import static com.google.common.collect.Lists.transform;
 /**
  * @author wolfs
  */
-public class DotStringGenerator extends AbstractGraphStringGenerator {
+public class DotStringGenerator extends AbstractDotStringGenerator {
     private static final Function<String, String> ESCAPE = new Function<String, String>() {
         @Override
         public String apply(String from) {
@@ -50,27 +48,15 @@ public class DotStringGenerator extends AbstractGraphStringGenerator {
         }
     };
 
-    private String subProjectColor = "#F0F0F0";
-    private String copyArtifactColor = "lightblue";
-
-    public DotStringGenerator subProjectColor(String color) {
-        subProjectColor = color;
-        return this;
-    }
-
-    public DotStringGenerator copyArtifactColor(String color) {
-        copyArtifactColor = color;
-        return this;
-    }
-
-    public DotStringGenerator(DependencyGraph graph) {
-        super(graph);
+    public DotStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
+        super(graph, projects2Subprojects);
     }
 
     /**
      * Generates the graphviz code for the given projects and dependencies
      * @return graphviz code
      */
+    @Override
     public String generate() {
         /**** Build the dot source file ****/
         StringBuilder builder = new StringBuilder();
@@ -107,19 +93,6 @@ public class DotStringGenerator extends AbstractGraphStringGenerator {
         return builder.toString();
     }
 
-    public String generateLegend() {
-        /**** Build the dot source file ****/
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("digraph {\n");
-        builder.append("node [shape=box, style=rounded];\n");
-
-        builder.append(cluster("Legend", legend()));
-
-        builder.append("}");
-        return builder.toString();
-    }
-
     private String standaloneProjectNodes(List<String> standaloneNames) {
         StringBuilder builder = new StringBuilder();
         for (ProjectNode proj : standaloneProjects) {
@@ -145,43 +118,6 @@ public class DotStringGenerator extends AbstractGraphStringGenerator {
         }
         return stringBuilder.toString();
     }
-
-    private String legend() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("label=\"Legend:\" labelloc=t centered=false color=black node [shape=plaintext]")
-                .append("\"Dependency Graph\"\n")
-                .append("\"Copy Artifact\"\n")
-                .append("\"Sub-Project\"\n")
-                .append("node [style=invis]\n")
-                .append("a [label=\"\"] b [label=\"\"]")
-                .append(" c [fillcolor=" + escapeString(subProjectColor) + " style=filled fontcolor="
-                        + escapeString(subProjectColor) + "]\n")
-                .append("a -> b [style=invis]\n")
-                .append("{rank=same a -> \"Dependency Graph\" [color=black style=bold minlen=2]}\n")
-                .append("{rank=same b -> \"Copy Artifact\" [color=lightblue minlen=2]}\n")
-                .append("{rank=same c -> \"Sub-Project\" [ style=invis]}\n");
-        return stringBuilder.toString();
-    }
-
-    private String cluster(String name, String contents, String... options) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("subgraph cluster" + name + " {\n");
-        builder.append(contents);
-        builder.append(Joiner.on("\n").join(options) + "}\n");
-        return builder.toString();
-    }
-
-    private Set<AbstractProject<?, ?>> listUniqueProjectsInDependencies(List<hudson.model.DependencyGraph.Dependency> dependencies)
-    {
-        Set<AbstractProject<?, ?>> set = new HashSet<AbstractProject<?, ?>>();
-        for (hudson.model.DependencyGraph.Dependency dependency : dependencies)
-        {
-            set.add(dependency.getUpstreamProject());
-            set.add(dependency.getDownstreamProject());
-        }
-        return set;
-    }
-
 
     private String projectToNodeString(ProjectNode proj) {
         return escapeString(proj.getName()) +
@@ -212,21 +148,9 @@ public class DotStringGenerator extends AbstractGraphStringGenerator {
         return escapeString(Hudson.getInstance().getRootUrl() + proj.getProject().getUrl());
     }
 
-    private String dependencyToCopiedArtifactString(hudson.model.DependencyGraph.Dependency dep) {
-        return dependencyToEdgeString(dep, "color=" + copyArtifactColor);
-    }
-
-    private String dependencyToEdgeString(hudson.model.DependencyGraph.Dependency dep, String... options) {
-        return escapeString(dep.getUpstreamProject().getFullDisplayName()) + " -> " +
-                escapeString(dep.getDownstreamProject().getFullDisplayName()) + " [ " + Joiner.on(" ").join(options) +" ] ";
-    }
-
     private String dependencyToEdgeString(Edge edge, String... options) {
         return escapeString(edge.source.getName()) + " -> " +
                 escapeString(edge.target.getName()) + " [ color=" + edge.getColor() + " " + Joiner.on(" ").join(options) +" ] ";
     }
 
-    private static String escapeString(String toEscape) {
-        return "\"" + toEscape + "\"";
-    }
 }

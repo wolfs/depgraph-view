@@ -1,27 +1,35 @@
-package hudson.plugins.depgraph_view.model;
+package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.common.collect.Sets;
-import hudson.Plugin;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
 import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.tasks.Builder;
 import jenkins.model.Jenkins;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Set;
+
+import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
 
 /**
  * @author wolfs
  */
 public class CopyArtifactEdgeProvider implements EdgeProvider {
+
+    private boolean copyartifactIsInstalled;
+
+    @Inject
+    CopyArtifactEdgeProvider(Jenkins jenkins) {
+        copyartifactIsInstalled = jenkins.getPlugin("copyartifact") != null;
+    }
+
     @Override
     public Iterable<Edge> getEdgesIncidentWith(AbstractProject<?, ?> project) {
         Set<Edge> artifactEdges = Sets.newHashSet();
 
-        Plugin copyartifact = Hudson.getInstance().getPlugin("copyartifact");
-        if (copyartifact != null) {
+        if (copyartifactIsInstalled) {
             if(project instanceof FreeStyleProject) {
 
                 FreeStyleProject proj = (FreeStyleProject) project;
@@ -38,7 +46,7 @@ public class CopyArtifactEdgeProvider implements EdgeProvider {
 
                         if (projectFromName != null) {
                             artifactEdges.add(
-                                    new CopyArtifactEdge(new ProjectNode(projectFromName), new ProjectNode(project)));
+                                    new CopyArtifactEdge(node(projectFromName), node(project)));
                         }
                     }
                 }

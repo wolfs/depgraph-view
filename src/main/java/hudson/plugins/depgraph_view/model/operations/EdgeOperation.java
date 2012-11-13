@@ -1,4 +1,4 @@
-package hudson.plugins.depgraph_view.operations;
+package hudson.plugins.depgraph_view.model.operations;
 
 import java.io.IOException;
 

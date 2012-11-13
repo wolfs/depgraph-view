@@ -1,4 +1,4 @@
-package hudson.plugins.depgraph_view.model;
+package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.common.collect.Sets;
 import edu.uci.ics.jung.algorithms.filters.VertexPredicateFilter;
@@ -61,7 +61,7 @@ public class DependencyGraph {
         }).transform(graph).getVertices();
     }
 
-    public Graph getGraph() {
+    public Graph<ProjectNode, Edge> getGraph() {
         return graph;
     }
 

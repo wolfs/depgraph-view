@@ -1,4 +1,4 @@
-package hudson.plugins.depgraph_view.model;
+package hudson.plugins.depgraph_view.model.graph;
 
 
 import com.google.common.base.Function;
@@ -8,31 +8,32 @@ import com.google.common.collect.Sets;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Set;
+
+import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
 
 /**
  * @author wolfs
  */
 public class GraphCalculator {
 
-    private Set<ProjectNode> initialProjects;
     private Set<EdgeProvider> edgeProviders;
 
-    public GraphCalculator(Iterable<ProjectNode> initialProjects, Iterable<? extends EdgeProvider> edgeProviders) {
-        this.initialProjects = Sets.newHashSet(initialProjects);
+    @Inject
+    public GraphCalculator(Set<EdgeProvider> edgeProviders) {
         this.edgeProviders = Sets.newHashSet(edgeProviders);
     }
 
-    public DependencyGraph generateGraph() {
+    public DependencyGraph generateGraph(Iterable<ProjectNode> initialProjects) {
         DependencyGraph graph = new DependencyGraph();
         graph.addNodes(initialProjects);
         extendGraph(graph, initialProjects);
         return graph;
     }
 
-    private void extendGraph(DependencyGraph graph, Set<ProjectNode> fromProjects) {
-        Set<ProjectNode> newProj = Sets.newHashSet();
+    private void extendGraph(DependencyGraph graph, Iterable<ProjectNode> fromProjects) {
         List<Edge> newEdges = Lists.newArrayList();
         for (ProjectNode projectNode : fromProjects) {
             AbstractProject<?,?> project = projectNode.getProject();
@@ -42,7 +43,7 @@ public class GraphCalculator {
                 }
             }
         }
-        newProj = graph.addEdgesWithNodes(newEdges);
+        Set<ProjectNode> newProj = graph.addEdgesWithNodes(newEdges);
         if (!newProj.isEmpty()) {
             extendGraph(graph, newProj);
         }
@@ -52,7 +53,7 @@ public class GraphCalculator {
         return Iterables.transform(projects, new Function<AbstractProject<?, ?>, ProjectNode>() {
             @Override
             public ProjectNode apply(AbstractProject<?, ?> input) {
-                return new ProjectNode(input);
+                return node(input);
             }
         });
     }

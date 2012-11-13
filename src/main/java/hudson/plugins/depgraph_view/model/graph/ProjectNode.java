@@ -1,4 +1,4 @@
-package hudson.plugins.depgraph_view.model;
+package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.common.base.Preconditions;
 import hudson.model.AbstractProject;
@@ -8,6 +8,10 @@ import hudson.model.AbstractProject;
  */
 public class ProjectNode {
     private final AbstractProject<?,?> project;
+
+    public static ProjectNode node(AbstractProject<?, ?> project) {
+        return new ProjectNode(project);
+    }
 
     public ProjectNode(AbstractProject<?, ?> project) {
         Preconditions.checkNotNull(project);

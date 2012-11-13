@@ -22,20 +22,25 @@
 
 package hudson.plugins.depgraph_view;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ListMultimap;
+import com.google.inject.Injector;
 import hudson.Launcher;
 import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
-import hudson.plugins.depgraph_view.model.CopyArtifactEdgeProvider;
-import hudson.plugins.depgraph_view.model.DependencyGraph;
-import hudson.plugins.depgraph_view.model.DependencyGraphEdgeProvider;
-import hudson.plugins.depgraph_view.model.GraphCalculator;
-import hudson.plugins.depgraph_view.operations.DeleteEdgeOperation;
-import hudson.plugins.depgraph_view.operations.PutEdgeOperation;
+import hudson.plugins.depgraph_view.model.display.AbstractGraphStringGenerator;
+import hudson.plugins.depgraph_view.model.display.DotGeneratorFactory;
+import hudson.plugins.depgraph_view.model.display.GeneratorFactory;
+import hudson.plugins.depgraph_view.model.display.JsonGeneratorFactory;
+import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
+import hudson.plugins.depgraph_view.model.graph.GraphCalculator;
+import hudson.plugins.depgraph_view.model.graph.SubprojectCalculator;
+import hudson.plugins.depgraph_view.model.operations.DeleteEdgeOperation;
+import hudson.plugins.depgraph_view.model.operations.PutEdgeOperation;
 import hudson.util.LogTaskListener;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -97,24 +102,24 @@ public abstract class AbstractDependencyGraphAction implements Action {
             }
         }
 
-        String graphString;
+        GeneratorFactory generatorFactory = (imageType == SupportedImageType.JSON) ?
+                new JsonGeneratorFactory() : new DotGeneratorFactory();
+        AbstractGraphStringGenerator stringGenerator = null;
         if (path.startsWith("/graph.")) {
-            GraphCalculator graphCalculator = new GraphCalculator(GraphCalculator.abstractProjectSetToProjectNodeSet(getProjectsForDepgraph()), ImmutableList.of(new DependencyGraphEdgeProvider(), new CopyArtifactEdgeProvider()));
-            DependencyGraph graph = graphCalculator.generateGraph();
-            if (imageType == SupportedImageType.JSON) {
-                JsonStringGenerator jsonStringGenerator = new JsonStringGenerator(graph);
-                graphString = jsonStringGenerator.generate();
-            }  else {
-                DotStringGenerator dotStringGenerator = new DotStringGenerator(graph);
-                graphString = dotStringGenerator.generate();
-            }
+            Injector injector = Jenkins.lookup(Injector.class);
+            GraphCalculator graphCalculator = injector.getInstance(GraphCalculator.class);
+            DependencyGraph graph =
+                    graphCalculator.generateGraph(GraphCalculator.abstractProjectSetToProjectNodeSet(getProjectsForDepgraph()));
+            ListMultimap projects2Subprojects =
+                    injector.getInstance(SubprojectCalculator.class).generate(graph);
+            stringGenerator = generatorFactory.newGenerator(graph, projects2Subprojects);
         } else if (path.startsWith("/legend.")) {
-            DotStringGenerator dotStringGenerator = new DotStringGenerator(new DependencyGraph());
-            graphString = dotStringGenerator.generateLegend();
+            stringGenerator = generatorFactory.newLegendGenerator();
         } else {
             rsp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
             return;
         }
+        String graphString = stringGenerator.generate();
 
         rsp.setContentType(imageType.contentType);
         if (imageType.requiresProcessing) {
@@ -131,14 +136,15 @@ public abstract class AbstractDependencyGraphAction implements Action {
      */
     private void runDot(OutputStream output, InputStream input, String type)
             throws IOException {
-        DescriptorImpl descriptor = Hudson.getInstance().getDescriptorByType(DependencyGraphProperty.DescriptorImpl.class);
+        DescriptorImpl descriptor = Hudson.getInstance().getDescriptorByType(DescriptorImpl.class);
         String dotPath = descriptor.getDotExeOrDefault();
         Launcher launcher = Hudson.getInstance().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
         try {
             launcher.launch()
                     .cmds(dotPath,"-T" + type, "-Gcharset=UTF-8")
                     .stdin(input)
-                    .stdout(output).start().join();
+                    .stdout(output)
+                    .start().join();
         } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Interrupted while waiting for dot-file to be created",e);
         }

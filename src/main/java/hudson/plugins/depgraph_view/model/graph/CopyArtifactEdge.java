@@ -1,4 +1,4 @@
-package hudson.plugins.depgraph_view.model;
+package hudson.plugins.depgraph_view.model.graph;
 
 /**
  * @author wolfs

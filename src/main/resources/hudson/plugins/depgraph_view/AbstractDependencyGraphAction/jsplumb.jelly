@@ -22,7 +22,8 @@
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:sv="/lib/sectioned_view" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt">
-	<link rel="stylesheet" href="${request.contextPath}/plugin/depgraph-view/css/depview.css"></link>
+  <j:new var="h2" className="hudson.Functions" /><!-- instead of JSP functions -->
+  <link rel="stylesheet" href="${h2.inferHudsonURL(context.currentRequest)}/plugin/depgraph-view/css/depview.css"></link>
 	<l:layout title="${it.title}">
 		<st:include it="${it.parentObject}" page="sidepanel.jelly" />
 		<l:main-panel>
@@ -33,7 +34,11 @@
 				<l:tab name="jsplumb" active="${true}" href="./jsplumb" />
 			</l:tabBar>
 
-			<div id="paper"></div> <!-- style="position:relative;margin-top:100px;" -->
+      <p>
+        <a href="graph.json">${%Json format}</a>
+      </p>
+
+      <div id="paper"></div> <!-- style="position:relative;margin-top:100px;" -->
 
 			<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script>
 			<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js'></script>
@@ -41,9 +46,6 @@
 			<script type='text/javascript' src='${rootURL}/plugin/depgraph-view/js/jquery.jsPlumb-1.3.9-all-min.js'></script>
 			<script type="text/javascript" src="${rootURL}/plugin/depgraph-view/js/jsPlumb_depview.js"></script>
 
-			<p>
-				<a href="graph.json">${%Json format}</a>
-			</p>
 		</l:main-panel>
 	</l:layout>
 </j:jelly>

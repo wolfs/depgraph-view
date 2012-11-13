@@ -1,13 +1,12 @@
-package hudson.plugins.depgraph_view;
+package hudson.plugins.depgraph_view.model.display;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import hudson.model.AbstractProject;
-import hudson.plugins.depgraph_view.model.DependencyGraph;
-import hudson.plugins.depgraph_view.model.Edge;
-import hudson.plugins.depgraph_view.model.ProjectNode;
+import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
+import hudson.plugins.depgraph_view.model.graph.Edge;
+import hudson.plugins.depgraph_view.model.graph.ProjectNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +16,7 @@ import java.util.List;
 /**
  * @author wolfs
  */
-public class AbstractGraphStringGenerator {
+public abstract class AbstractGraphStringGenerator {
     // Lexicographic order of the dependencies
     protected static final Comparator<Edge> DEP_COMPARATOR = new Comparator<Edge>() {
         @Override
@@ -56,9 +55,9 @@ public class AbstractGraphStringGenerator {
     protected ListMultimap<ProjectNode, ProjectNode> subJobs;
     protected final DependencyGraph graph;
 
-    protected AbstractGraphStringGenerator(DependencyGraph graph) {
+    protected AbstractGraphStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
         this.graph = graph;
-        this.subJobs = ArrayListMultimap.create();
+        this.subJobs = projects2Subprojects;
 
         /* Sort dependencies (by downstream task first) */
         edges = Lists.newArrayList(graph.getEdges());
@@ -72,5 +71,7 @@ public class AbstractGraphStringGenerator {
         projectsInDeps.removeAll(standaloneProjects);
         Collections.sort(projectsInDeps, NODE_COMPARATOR);
     }
+
+    public abstract String generate();
 
 }
