@@ -36,8 +36,6 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * Class which keeps the configuration for the graphviz
  * executable.
- *
- * @author wolfs
  */
 public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyGraphProperty> {
 

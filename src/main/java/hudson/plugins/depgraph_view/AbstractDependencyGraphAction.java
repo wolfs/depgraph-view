@@ -59,8 +59,6 @@ import java.util.regex.Pattern;
 
 /**
  * Basic action for creating a Dot-Image of the DependencyGraph
- *
- * @author wolfs
  */
 public abstract class AbstractDependencyGraphAction implements Action {
     private final Logger LOGGER = Logger.getLogger(Logger.class.getName());

@@ -1,7 +1,5 @@
 /*
- * The MIT License
- *
- * Copyright (c) 2011, Stefan Wolf
+ * Copyright (c) 2012 Stefan Wolf
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +36,7 @@ import static com.google.common.base.Functions.compose;
 import static com.google.common.collect.Lists.transform;
 
 /**
- * @author wolfs
+ * Generates a dot string representation of the graph
  */
 public class DotStringGenerator extends AbstractDotStringGenerator {
     private static final Function<String, String> ESCAPE = new Function<String, String>() {

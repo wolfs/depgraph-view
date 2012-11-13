@@ -32,8 +32,6 @@ import java.util.List;
 
 /**
  * Factory to a dependency graph view action to all views
- *
- * @author wolfs
  */
 @Extension
 public class DependencyGraphViewActionFactory extends TransientViewActionFactory {

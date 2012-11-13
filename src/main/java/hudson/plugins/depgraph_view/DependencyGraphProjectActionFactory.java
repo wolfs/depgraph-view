@@ -33,8 +33,6 @@ import java.util.Collections;
 
 /**
  * Factory to add a dependency graph view action to each project
- *
- * @author wolfs
  */
 @Extension
 public class DependencyGraphProjectActionFactory extends TransientProjectActionFactory {
