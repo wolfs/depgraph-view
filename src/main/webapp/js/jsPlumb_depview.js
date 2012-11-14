@@ -63,7 +63,7 @@
                             attr('id', node.name).
                             css('top', node.y + top).
                             css('left', node.x + xOverall).
-                            appendTo(window.paper);
+                            appendTo(window.depview.paper);
                     })
                     top = top + cluster.vSize + space
                     // xOverall = xOverall + cluster.hSize + space
