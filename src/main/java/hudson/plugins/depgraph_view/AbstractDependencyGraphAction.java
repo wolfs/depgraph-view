@@ -156,7 +156,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
     public boolean isGraphvizEnabled() {
         return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).isGraphvizEnabled();
     }
-    
+
     /**
      * @return projects for which the dependency graph should be calculated
      */

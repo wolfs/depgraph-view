@@ -47,7 +47,7 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
     public static class DescriptorImpl extends Descriptor<DependencyGraphProperty> {
 
         private String dotExe;
-        
+
         private boolean graphvizEnabled = true;
 
         public DescriptorImpl() {
@@ -77,7 +77,7 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
         public String getDotExe() {
             return dotExe;
         }
-        
+
         public boolean isGraphvizEnabled() {
             return graphvizEnabled;
         }
