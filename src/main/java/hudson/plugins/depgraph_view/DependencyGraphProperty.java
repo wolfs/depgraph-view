@@ -98,6 +98,11 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             save();
         }
 
+        public synchronized void setGraphvizEnabled(boolean graphvizEnabled) {
+            this.graphvizEnabled = graphvizEnabled;
+            save();
+        }
+
         public FormValidation doCheckDotExe(@QueryParameter final String value) {
             return FormValidation.validateExecutable(value);
         }
