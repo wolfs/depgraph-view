@@ -38,7 +38,7 @@ public class DeleteEdgeOperation extends EdgeOperation {
         if (source != null && target != null) {
             final BuildTrigger buildTrigger = (BuildTrigger) source.getPublishersList().get(BuildTrigger.class);
             if (buildTrigger != null) {
-                final String childProjectsValue = buildTrigger.getChildProjectsValue().replace(target.getName(), "");
+                final String childProjectsValue = buildTrigger.getChildProjectsValue().replace(target.getName(), "").replace(", ,", ",");
                 final Result threshold = buildTrigger.getThreshold();
                 source.getPublishersList().remove(buildTrigger);
                 source.getPublishersList().add(new BuildTrigger(childProjectsValue, threshold));
