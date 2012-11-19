@@ -25,7 +25,6 @@ package hudson.plugins.depgraph_view.model.display;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ListMultimap;
-import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
 import hudson.plugins.depgraph_view.model.graph.Edge;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
@@ -143,7 +142,7 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
     }
 
     private String getEscapedProjectUrl(ProjectNode proj) {
-        return escapeString(Hudson.getInstance().getRootUrl() + proj.getProject().getUrl());
+        return escapeString(proj.getProject().getAbsoluteUrl());
     }
 
     private String dependencyToEdgeString(Edge edge, String... options) {

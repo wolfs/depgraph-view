@@ -129,6 +129,7 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
                 Point2D point = layout.transform(node);
                 nodeList.add(ImmutableMap.<String, Object>builder()
                         .put("name", node.getName())
+                        .put("fullName", node.getProject().getFullName())
                         .put("url", node.getProject().getAbsoluteUrl())
                         .put("x", point.getX() - minX)
                         .put("y", point.getY() - minY)
