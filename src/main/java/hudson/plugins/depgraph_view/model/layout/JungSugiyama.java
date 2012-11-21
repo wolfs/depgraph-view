@@ -25,11 +25,13 @@ package hudson.plugins.depgraph_view.model.layout;
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.graph.Graph;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,8 +76,6 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 
 	private int vertSpacing;
 
-	private Set<V> traversalSet = new HashSet<V>();
-
 	private Map<V, CellWrapper<V>> vertToWrapper = new HashMap<V, CellWrapper<V>>();
 
 	private Orientation orientation;
@@ -87,18 +87,35 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 
 	public JungSugiyama(Graph<V, E> g, Orientation orientation, int horzSpacing, int vertSpacing)
 	{
-		super(g);
+		super(copyGraph(g));
 		this.orientation = orientation;
 		this.horzSpacing = horzSpacing;
 		this.vertSpacing = vertSpacing;
 	}
 
+    private static <V,E> Graph<V,E> copyGraph(Graph<V,E> src) {
+        try {
+            @SuppressWarnings("unchecked")
+            Graph<V,E> dest = (Graph<V,E>) src.getClass().newInstance();
+            for (V v : src.getVertices())
+                dest.addVertex(v);
+
+            for (E e : src.getEdges())
+                dest.addEdge(e, src.getIncidentVertices(e));
+            return dest;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 	public void initialize()
 	{
 		if (!executed)
 		{
-			LinkedList<LinkedList<CellWrapper<V>>> graphLevels = runSugiyama();
-			for (LinkedList<CellWrapper<V>> level : graphLevels)
+			List<List<CellWrapper<V>>> graphLevels = runSugiyama();
+			for (List<CellWrapper<V>> level : graphLevels)
 			{
 				for (CellWrapper<V> wrapper : level)
 				{
@@ -141,55 +158,26 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 	* bary center.
 	*
 	*/
-	private LinkedList<LinkedList<CellWrapper<V>>> runSugiyama()
+	private List<List<CellWrapper<V>>> runSugiyama()
 	{
 		executed = true;
 		Set<V> vertexSet = new HashSet<V>(graph.getVertices());
 
-		// search all roots
-		LinkedList<V> roots = searchRoots(vertexSet);
-
-		// create levels -> its a LinkedList of LinkedLists
-		LinkedList<LinkedList<CellWrapper<V>>> levels = fillLevels(roots);
-
-		// solves the edge crosses
+        makeGraphAcyclic();
+		List<List<CellWrapper<V>>> levels = fillLevels();
+        levels = balanceLevels(levels);
 		solveEdgeCrosses(levels);
-
-		// move all nodes into the barycenter
 		moveToBarycenter(levels, vertexSet);
-
-		// you could probably nuke the maps at this point, but i'm not certain, and I don't care.
 		return levels;
 	}
 
-	/** Searches all Roots for the current Graph
-	* First the method marks any Node as not visited.
-	* Than calls searchRoots(MyGraphCell) for each
-	* not visited Cell.
-	* The Roots are stored in the LinkedList named roots
-	*
-	* @return returns a LinkedList with the roots
-	*/
-	private LinkedList<V> searchRoots(Set<V> vertexSet)
-	{
-		LinkedList<V> roots = new LinkedList<V>();
-		// first: mark all as not visited
-		// it is assumed that vertex are not visited
-		for (V vert : vertexSet)
-		{
-			if (!traversalSet.contains(vert))
-			{
-				traversalSet.add(vert);
+    private void makeGraphAcyclic() {
+        new AcyclicCalculator().run();
+    }
 
-				int in_degree = getGraph().inDegree(vert);
-				if (in_degree == 0)
-				{
-					roots.add(vert);
-				}
-			}
-		}
-		return roots;
-	}
+    private List<List<CellWrapper<V>>> fillLevels() {
+        return fillLevels(0, copyGraph(graph), new LinkedList<List<CellWrapper<V>>>());
+    }
 
 	/** Method fills the levels and stores them in the member levels.
 
@@ -197,77 +185,119 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 	* These LinkedLists are the elements in the <code>levels</code> LinkedList.
 	*
 	*/
-	private LinkedList<LinkedList<CellWrapper<V>>> fillLevels(LinkedList<V> roots)
-	{
-		LinkedList<LinkedList<CellWrapper<V>>> levels = new LinkedList<LinkedList<CellWrapper<V>>>();
+	private List<List<CellWrapper<V>>> fillLevels(int currentLevel, Graph<V, E> graph, List<List<CellWrapper<V>>> levels) {
+        if (graph.getVertices().isEmpty()) {
+            return levels;
+        }
+        List<V> roots = searchRoots(graph);
+        if (levels.size() == currentLevel)
+            levels.add(currentLevel, new LinkedList<CellWrapper<V>>());
+        List<CellWrapper<V>> vecForTheCurrentLevel = levels.get(currentLevel);
+        for (V rootNode : roots) {
+            // Create a wrapper for the node
+            int numberForTheEntry = vecForTheCurrentLevel.size();
+            CellWrapper<V> wrapper = new CellWrapper<V>(currentLevel, numberForTheEntry, rootNode);
 
-		// clear the visit
-		traversalSet.clear();
+            // put the Wrapper in the LevelLinkedList
+            vecForTheCurrentLevel.add(wrapper);
+            // concat the wrapper to the cell for an easy access
+            vertToWrapper.put(rootNode, wrapper);
 
-		for (V r : roots)
-		{
-			fillLevels(levels, 0, r); // 0 indicates level 0
-		} // i.e root level
-		return levels;
+            graph.removeVertex(rootNode);
+        } // i.e root level
+        if (vecForTheCurrentLevel.size() > gridAreaSize) {
+            gridAreaSize = vecForTheCurrentLevel.size();
+        }
+        fillLevels(currentLevel + 1, graph, levels); // 0 indicates level 0
+        return levels;
 	}
 
-	/** Fills the LinkedList for the specified level with a wrapper
-	* for the MyGraphCell. After that the method called for
-	* each neighbor graph cell.
-	*
-	* @param level The level for the graphCell
-	* @param rootNode The Graph Cell
-	*/
-	private void fillLevels(LinkedList<LinkedList<CellWrapper<V>>> levels, int level, V rootNode)
-	{ // this is a recursive function
-		// precondition control
-		if (rootNode == null)
-			return;
+    /** Searches all Roots for the current Graph
+     * First the method marks any Node as not visited.
+     * Than calls searchRoots(MyGraphCell) for each
+     * not visited Cell.
+     * The Roots are stored in the LinkedList named roots
+     *
+     * @return returns a LinkedList with the roots
+     */
+    private List<V> searchRoots(Graph<V,E> graph)
+    {
+        List<V> roots = new LinkedList<V>();
+        // first: mark all as not visited
+        // it is assumed that vertex are not visited
+        for (V vert : graph.getVertices())
+        {
+            int in_degree = graph.inDegree(vert);
+            if (in_degree == 0) {
+                roots.add(vert);
+            }
+        }
+        return roots;
+    }
 
-		// be sure that a LinkedList container exists for the current level
-		if (levels.size() == level)
-			levels.add(level, new LinkedList<CellWrapper<V>>());
+    private List<List<CellWrapper<V>>> balanceLevels(List<List<CellWrapper<V>>> levels) {
+        Map<V, Integer> maxLevels = new HashMap<V, Integer>();
+        Map<V, Integer> minLevels = new HashMap<V, Integer>();
+        List<CellWrapper<V>> verticesToAdd = new LinkedList<CellWrapper<V>>();
+        List<Integer> sizes = new ArrayList<Integer>(levels.size());
+        for (List<CellWrapper<V>> levelList : levels) {
+            for (CellWrapper<V> node : levelList) {
+                int minLevel = findMinPossibleLevel(node);
+                int maxLevel = findMaxPossibleLevel(node, levels.size());
+                if (minLevel != maxLevel) {
+                    maxLevels.put(node.getVertexView(), maxLevel);
+                    minLevels.put(node.getVertexView(), minLevel);
+                    verticesToAdd.add(node);
+                }
+            }
+            levelList.removeAll(verticesToAdd);
+            sizes.add(levelList.size());
+        }
+        for (CellWrapper<V> vertex : verticesToAdd) {
+            int minSize = Integer.MAX_VALUE;
+            int minIndex = -1;
+            for (int i = minLevels.get(vertex.getVertexView()); i <= maxLevels.get(vertex.getVertexView()); i++) {
+                if (sizes.get(i) < minSize) {
+                    minSize = sizes.get(i);
+                    minIndex = i;
+                }
+            }
+            levels.get(minIndex).add(vertex);
+            sizes.set(minIndex, sizes.get(minIndex) + 1);
+        }
+        List<List<CellWrapper<V>>> newLevels = new LinkedList<List<CellWrapper<V>>>();
+        for (List<CellWrapper<V>> level : levels) {
+            LinkedList<CellWrapper<V>> newLevel = new LinkedList<CellWrapper<V>>();
+            for (CellWrapper<V> cellWrapper : level) {
+                newLevel.add(new CellWrapper<V>(newLevels.size(), newLevel.size(), cellWrapper.getVertexView()));
+            }
+            newLevels.add(newLevel);
+        }
+        return newLevels;
+    }
 
-		// if the cell already visited return
-		if (traversalSet.contains(rootNode))
-		{
-			return;
-		}
+    private int findMaxPossibleLevel(CellWrapper<V> node, int numLevels) {
+        V vertex = node.getVertexView();
+        int maxLevel = numLevels - 1;
+        for (V successor : graph.getSuccessors(vertex)) {
+            int level = vertToWrapper.get(successor).getLevel();
+            maxLevel = Math.min(level - 1, maxLevel);
+        }
+        return maxLevel;
+    }
 
-		// mark as visited for cycle tests
-		traversalSet.add(rootNode);
+    private int findMinPossibleLevel(CellWrapper<V> node) {
+        V vertex = node.getVertexView();
+        Collection<V> predecessors = graph.getPredecessors(vertex);
+        int minLevel = 0;
+        for (V predecessor : predecessors) {
+            int level = vertToWrapper.get(predecessor).getLevel();
+            minLevel = Math.max(level + 1, minLevel);
+        }
+        return minLevel;
+    }
 
-		// put the current node into the current level
-		// get the Level LinkedList
-		LinkedList<CellWrapper<V>> vecForTheCurrentLevel = levels.get(level);
-
-		// Create a wrapper for the node
-		int numberForTheEntry = vecForTheCurrentLevel.size();
-
-		CellWrapper<V> wrapper = new CellWrapper<V>(level, numberForTheEntry, rootNode);
-
-		// put the Wrapper in the LevelLinkedList
-		vecForTheCurrentLevel.add(wrapper);
-
-		// concat the wrapper to the cell for an easy access
-		//vertexView.getAttributes().put(SUGIYAMA_CELL_WRAPPER, wrapper);
-		vertToWrapper.put(rootNode, wrapper);
-
-		Collection<E> out_edge_set = graph.getOutEdges(rootNode);
-		for (E edge : out_edge_set)
-		{
-			V targetVertex = graph.getDest(edge);
-			fillLevels(levels, level + 1, targetVertex);
-		}
-
-		if (vecForTheCurrentLevel.size() > gridAreaSize)
-		{
-			gridAreaSize = vecForTheCurrentLevel.size();
-		}
-
-	}
-
-	private void solveEdgeCrosses(LinkedList<LinkedList<CellWrapper<V>>> levels)
+    private void solveEdgeCrosses(List<List<CellWrapper<V>>> levels)
 	{
 		int movementsCurrentLoop = -1;
 
@@ -293,10 +323,10 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 	/**
 	* @return movements
 	*/
-	private int solveEdgeCrosses(boolean down, LinkedList<LinkedList<CellWrapper<V>>> levels, int levelIndex)
+	private int solveEdgeCrosses(boolean down, List<List<CellWrapper<V>>> levels, int levelIndex)
 	{
 		// Get the current level
-		LinkedList<CellWrapper<V>> currentLevel = levels.get(levelIndex);
+		List<CellWrapper<V>> currentLevel = levels.get(levelIndex);
 		int movements = 0;
 
 		// restore the old sort
@@ -354,7 +384,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 		return movements;
 	}
 
-	private void moveToBarycenter(LinkedList<LinkedList<CellWrapper<V>>> levels, Set<V> vertexSet)
+	private void moveToBarycenter(List<List<CellWrapper<V>>> levels, Set<V> vertexSet)
 	{
 		for (V v : vertexSet)
 		{
@@ -392,7 +422,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 				}
 			}
 		}
-		for (LinkedList<CellWrapper<V>> level : levels)
+		for (List<CellWrapper<V>> level : levels)
 		{
 			int pos = 0;
 			for (CellWrapper<V> wrapper : level)
@@ -432,13 +462,13 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 		return edgeList;
 	}
 
-	private int moveToBarycenter(LinkedList<LinkedList<CellWrapper<V>>> levels, int levelIndex)
+	private int moveToBarycenter(List<List<CellWrapper<V>>> levels, int levelIndex)
 	{
 		// Counter for the movements
 		int movements = 0;
 
 		// Get the current level
-		LinkedList<CellWrapper<V>> currentLevel = levels.get(levelIndex);
+		List<CellWrapper<V>> currentLevel = levels.get(levelIndex);
 
 		for (int currentIndexInTheLevel = 0; currentIndexInTheLevel < currentLevel.size(); currentIndexInTheLevel++)
 		{
@@ -473,7 +503,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 
 					CellWrapper<V> targetWrapper = vertToWrapper.get(neighborVertex);
 
-					if (!(targetWrapper == sourceWrapper) || (targetWrapper == null || targetWrapper.getLevel() == levelIndex))
+					if (!(targetWrapper == sourceWrapper) || targetWrapper.getLevel() == levelIndex)
 					{
 						gridPositionsSum += targetWrapper.getGridPosition();
 						countNodes++;
@@ -507,7 +537,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 	*
 	* @return The free GridPosition or -1 is position is not free.
 	*/
-	private boolean move(boolean toRight, LinkedList<CellWrapper<V>> currentLevel, int currentIndexInTheLevel, int currentPriority)
+	private boolean move(boolean toRight, List<CellWrapper<V>> currentLevel, int currentIndexInTheLevel, int currentPriority)
 	{
 		CellWrapper<V> currentWrapper = currentLevel.get(currentIndexInTheLevel);
 
@@ -685,8 +715,40 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 	//--------------------------------------------
 	public void reset()
 	{
-		traversalSet.clear();
 		vertToWrapper.clear();
 		executed = false;
 	}
+
+    private class AcyclicCalculator {
+        private Set<V> onStack = new HashSet<V>();
+        private Set<V> visited = new HashSet<V>();
+        public AcyclicCalculator() {
+        }
+
+        private void dfs(V vertex) {
+            if (visited.contains(vertex)) {
+                return;
+            }
+
+            visited.add(vertex);
+            onStack.add(vertex);
+
+            for (E edge: graph.getOutEdges(vertex)) {
+                V target = graph.getDest(edge);
+                if (onStack.contains(target)) {
+                    graph.removeEdge(edge);
+                    graph.addEdge(edge, target, vertex);
+                } else {
+                    dfs(target);
+                }
+            }
+            onStack.remove(vertex);
+        }
+
+        public void run() {
+            for (V vertex : graph.getVertices()) {
+                dfs(vertex);
+            }
+        }
+    }
 }
