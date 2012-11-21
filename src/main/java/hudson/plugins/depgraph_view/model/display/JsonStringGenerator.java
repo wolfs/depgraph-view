@@ -31,10 +31,10 @@ import edu.uci.ics.jung.algorithms.filters.FilterUtils;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.graph.Graph;
-import hudson.plugins.depgraph_view.model.layout.JungSugiyama;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
 import hudson.plugins.depgraph_view.model.graph.Edge;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
+import hudson.plugins.depgraph_view.model.layout.JungSugiyama;
 import net.sf.json.JSONObject;
 
 import java.awt.*;
@@ -47,7 +47,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Ordering.natural;
 
 /**
@@ -55,7 +54,7 @@ import static com.google.common.collect.Ordering.natural;
  */
 public class JsonStringGenerator extends AbstractGraphStringGenerator {
 
-    public JsonStringGenerator(DependencyGraph graph, ListMultimap projects2Subprojects) {
+    public JsonStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
         super(graph, projects2Subprojects);
     }
 
@@ -66,9 +65,6 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
      */
     @Override
     public String generate() {
-
-        // Stuff not linked to other stuff
-        List<String> standaloneNames = transform(standaloneProjects, PROJECT_NAME_FUNCTION);
 
         List<Map<String, String>> edges = new ArrayList<Map<String, String>>();
 
@@ -90,7 +86,9 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
         List<Graph<ProjectNode, Edge>> subgraphs = newArrayList(FilterUtils.createAllInducedSubgraphs(clusters, graph.getGraph()));
         List<Map<String, Object>> clusterList = newArrayList();
         for (Graph<ProjectNode, Edge> subgraph : subgraphs) {
-            Map<String, Object> cluster = Maps.newHashMap();
+            if (subgraph.getVertexCount() == 1) {
+                continue;
+            }
             Layout<ProjectNode, Edge> layout = new JungSugiyama<ProjectNode, Edge>(subgraph);
             layout.setSize(new Dimension(300,800));
             layout.initialize();
@@ -127,20 +125,15 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
 
             for (ProjectNode node : subgraph.getVertices()) {
                 Point2D point = layout.transform(node);
-                nodeList.add(ImmutableMap.<String, Object>builder()
-                        .put("name", node.getName())
-                        .put("fullName", node.getProject().getFullName())
-                        .put("url", node.getProject().getAbsoluteUrl())
-                        .put("x", point.getX() - minX)
-                        .put("y", point.getY() - minY)
-                        .build());
+                nodeList.add(
+                        point2Json(point.getX() - minX, point.getY() - minY, node));
             }
-            cluster.put("nodes", nodeList);
-            cluster.put("hSize", maxX - minX);
-            cluster.put("vSize", maxY - minY);
+            Map<String, Object> cluster =
+                    createCluster(nodeList, maxX - minX, maxY - minY);
             clusterList.add(cluster);
         }
-
+        Map<String, Object> standaloneCluster = createStandaloneCluster();
+        clusterList.add(standaloneCluster);
 
         JSONObject json = new JSONObject();
         json.put("edges", edges);
@@ -148,6 +141,42 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
 
         final String jsonStr = json.toString(2);
         return jsonStr;
+    }
+
+    private Map<String, Object> createStandaloneCluster() {
+        final double nodeXSize = 150;
+        final double nodeYSize = 90;
+        final int nodesPerRow = 5;
+        List<Map<String,Object>> nodeList = newArrayList();
+        int row = 0;
+        int column = 0;
+        for (ProjectNode node : standaloneProjects) {
+            nodeList.add(point2Json(column * nodeXSize, row * nodeYSize,node));
+            column += 1;
+            if (column >= nodesPerRow) {
+                row += 1;
+                column = 0;
+            }
+        }
+        return createCluster(nodeList, 700.0,(standaloneProjects.size()/nodesPerRow + 1) * nodeYSize);
+    }
+
+    private Map<String, Object> createCluster(List<Map<String, Object>> nodeList, double hSize, double vSize) {
+        Map<String, Object> cluster = Maps.newHashMap();
+        cluster.put("nodes", nodeList);
+        cluster.put("hSize", hSize);
+        cluster.put("vSize", vSize);
+        return cluster;
+    }
+
+    private ImmutableMap<String, Object> point2Json(double x, double y, ProjectNode node) {
+        return ImmutableMap.<String, Object>builder()
+                .put("name", node.getName())
+                .put("fullName", node.getProject().getFullName())
+                .put("url", node.getProject().getAbsoluteUrl())
+                .put("x", x)
+                .put("y", y)
+                .build();
     }
 
     /**
