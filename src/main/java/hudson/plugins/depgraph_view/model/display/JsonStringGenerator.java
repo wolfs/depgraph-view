@@ -53,12 +53,9 @@ import static com.google.common.collect.Ordering.natural;
  * Generates a Json representation of the graph
  */
 public class JsonStringGenerator extends AbstractGraphStringGenerator {
-    
-    private final boolean editFunctionInJSViewEnabled;
 
-    public JsonStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects, boolean editFunctionInJSViewEnabled) {
+    public JsonStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
         super(graph, projects2Subprojects);
-        this.editFunctionInJSViewEnabled = editFunctionInJSViewEnabled;
     }
 
     /**
@@ -141,7 +138,6 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
         JSONObject json = new JSONObject();
         json.put("edges", edges);
         json.put("clusters", clusterList);
-        json.put("isEditFunctionInJSViewEnabled", editFunctionInJSViewEnabled);
 
         final String jsonStr = json.toString(2);
         return jsonStr;

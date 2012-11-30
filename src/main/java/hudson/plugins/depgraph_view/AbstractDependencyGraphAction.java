@@ -36,6 +36,7 @@ import hudson.plugins.depgraph_view.model.display.GeneratorFactory;
 import hudson.plugins.depgraph_view.model.display.JsonGeneratorFactory;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
 import hudson.plugins.depgraph_view.model.graph.GraphCalculator;
+import hudson.plugins.depgraph_view.model.graph.ProjectNode;
 import hudson.plugins.depgraph_view.model.graph.SubprojectCalculator;
 import hudson.plugins.depgraph_view.model.operations.DeleteEdgeOperation;
 import hudson.plugins.depgraph_view.model.operations.PutEdgeOperation;
@@ -66,7 +67,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
     private final Logger LOGGER = Logger.getLogger(Logger.class.getName());
 
     private static final Pattern EDGE_PATTERN = Pattern.compile("/(.*)/(.*[^/])(.*)");
-    
+
     /**
      * This method is called via AJAX to obtain the context menu for this model object, but we don't have one...
      */
@@ -104,9 +105,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
         try {
             imageType = SupportedImageType.valueOf(path.substring(path.lastIndexOf('.')+1).toUpperCase());
         } catch (Exception e) {
-            if (imageType==null) {
-                imageType = SupportedImageType.PNG;
-            }
+            imageType = SupportedImageType.PNG;
         }
 
         GeneratorFactory generatorFactory = (imageType == SupportedImageType.JSON) ?
@@ -117,7 +116,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
             GraphCalculator graphCalculator = injector.getInstance(GraphCalculator.class);
             DependencyGraph graph =
                     graphCalculator.generateGraph(GraphCalculator.abstractProjectSetToProjectNodeSet(getProjectsForDepgraph()));
-            ListMultimap projects2Subprojects =
+            ListMultimap<ProjectNode, ProjectNode> projects2Subprojects =
                     injector.getInstance(SubprojectCalculator.class).generate(graph);
             stringGenerator = generatorFactory.newGenerator(graph, projects2Subprojects);
         } else if (path.startsWith("/legend.")) {
@@ -164,6 +163,10 @@ public abstract class AbstractDependencyGraphAction implements Action {
 
     public boolean isGraphvizEnabled() {
         return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).isGraphvizEnabled();
+    }
+
+    public boolean isEditFunctionInJSViewEnabled() {
+        return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
     }
 
     /**

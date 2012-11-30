@@ -36,7 +36,7 @@
                     radius : 6
                 } ] ],
 
-                // def for new connector (drag n' drop) 
+                // def for new connector (drag n' drop)
                 // - line 2px
                 PaintStyle : {
                     lineWidth : 2,
@@ -60,12 +60,16 @@
                 var space = 150;
                 var xOverall = 0;
 
-                var isEditFunctionInJSViewEnabled = data["isEditFunctionInJSViewEnabled"];
                 var clusters = data["clusters"];
                 // iterate clusters
                 jQuery.each(clusters, function(i, cluster) {
                     jQuery.each(cluster.nodes, function(i,node) {
-                        jQuery('<div><div class="ep"/><a href="' + node.url + '">' + node.name + '</a></div>').
+                        var nodeString = '<div>'
+                        if (window.depview.editEnabled) {
+                            nodeString = nodeString + '<div class="ep"/>';
+                        }
+                        nodeString = nodeString + '<a href="' + node.url + '">' + node.name + '</a></div>'
+                        jQuery(nodeString).
                             addClass('window').
                             attr('id', escapeId(node.name)).
                             attr('data-jobname', node.fullName).
@@ -79,18 +83,16 @@
                 // definitions for drag/drop connections
                 jQuery(".ep").each(function(idx, current) {
                     var p = jQuery(current).parent()
-                    if(isEditFunctionInJSViewEnabled) {
+                    if(window.depview.editEnabled) {
 	                    jsPlumb.makeSource(current, {
 	                        anchor : "Continuous",
 	                        parent: p
 	                    });
                     }
                 })
-                if(isEditFunctionInJSViewEnabled) {
-	                jsPlumb.makeTarget(jsPlumb.getSelector('.window'), {
-	                    anchor : "Continuous"
-	                });
-                }
+                jsPlumb.makeTarget(jsPlumb.getSelector('.window'), {
+                    anchor : "Continuous"
+                });
 
                 var edges = data["edges"];
                 jQuery.each(edges, function(i, edge) {
@@ -98,14 +100,21 @@
                     to = getJobDiv(edge["to"]);
                     // creates/defines the look and feel of the loaded connections: red="dep", green="copy"
                     var connection;
+                    var connOptions = {
+                        source : from,
+                        target : to,
+                        scope: edge["type"],
+                        paintStyle:{lineWidth : 2}
+                    }
                     if("copy" == edge["type"]){
-                        connection = jsPlumb.connect({ source : from, target : to, scope: edge["type"], paintStyle:{lineWidth : 2, strokeStyle: window.depview.colorcopy},
-                                                       overlays:[[ "Label", { label: "copy", id: from+'.'+to } ]]
-                                                    });
-                    }else{
-                        connection = jsPlumb.connect({ source : from, target : to, scope: edge["type"], paintStyle:{lineWidth : 2, strokeStyle: window.depview.colordep}});
+                        connOptions.paintStyle.strokeStyle = window.depview.colorcopy;
+                        connOptions.overlays = [[ "Label", { label: "copy", id: from+'.'+to } ]];
+                        connection = jsPlumb.connect(connOptions);
+                    } else {
+                        connOptions.paintStyle.strokeStyle = window.depview.colordep;
+                        connection = jsPlumb.connect(connOptions);
                         // only allow deletion of "dep" connections
-                        if(isEditFunctionInJSViewEnabled) {
+                        if(window.depview.editEnabled) {
 	                        connection.bind("click", function(conn) {
 	                            var sourceJobName = conn.source.attr('data-jobname');
 	                            var targetJobName = conn.target.attr('data-jobname')
@@ -126,7 +135,7 @@
                     }
                 });
 
-                if(isEditFunctionInJSViewEnabled) {
+                if(window.depview.editEnabled) {
 	                jsPlumb.bind("jsPlumbConnection", function(info) {
 	                    jQuery.ajax({
 	                           url: encodeURI('edge/'+info.source.attr('data-jobname') +'/'+info.target.attr('data-jobname')),
@@ -160,8 +169,6 @@
 
                 // make all the window divs draggable
                 jsPlumb.draggable(jsPlumb.getSelector(".window"));
-
-
             });
         }
     };
