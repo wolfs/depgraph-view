@@ -37,7 +37,7 @@
   <packaging>hpi</packaging>
 
   <name>Dependency Graph Viewer Plugin</name>
-  <version>0.10</version>
+  <version>0.11-SNAPSHOT</version>
   <licenses>
     <license>
       <name>The MIT license</name>
