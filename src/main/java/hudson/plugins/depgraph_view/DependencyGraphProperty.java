@@ -110,6 +110,11 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             this.graphvizEnabled = graphvizEnabled;
             save();
         }
+        
+        public void setEditFunctionInJSViewEnabled(boolean editFunctionInJSViewEnabled) {
+            this.editFunctionInJSViewEnabled = editFunctionInJSViewEnabled;
+            save();
+        }
 
         public FormValidation doCheckDotExe(@QueryParameter final String value) {
             return FormValidation.validateExecutable(value);
