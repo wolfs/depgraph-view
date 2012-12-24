@@ -27,7 +27,7 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <l:task icon="images/24x24/up.png" href=".." title="${%Back}" contextMenu="false"/>
-      <l:task icon="images/24x24/setting.gif" href="${rootURL}/manage" title="${%Manage Jenkins}" />
+      <l:task icon="images/24x24/setting.gif" href="${rootURL}/manage" title="${%Manage Jenkins}" permission="${app.ADMINISTER}"/>
     </l:tasks>
     <t:executors computers="${h.singletonList(it)}" />
   </l:side-panel>
