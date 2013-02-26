@@ -64,7 +64,7 @@ public class CopyArtifactEdgeProvider implements EdgeProvider {
                         CopyArtifact caBuilder = (CopyArtifact) builder;
                         String projectName = caBuilder.getProjectName();
                         Jenkins jenkins = Jenkins.getInstance();
-                        AbstractProject<?,?> projectFromName = jenkins.getItemByFullName(projectName, AbstractProject.class);
+                        AbstractProject<?,?> projectFromName = jenkins.getItem(projectName, project.getParent(), AbstractProject.class);
 
                         if (projectFromName != null) {
                             artifactEdges.add(
