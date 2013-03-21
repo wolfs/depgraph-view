@@ -1,0 +1,49 @@
+<!--
+
+    Copyright (C) 2013 Barchart, Inc. <http://www.barchart.com/>
+
+    All rights reserved. Licensed under the OSI BSD License.
+
+    http://www.opensource.org/licenses/bsd-license.php
+
+-->
+<!--
+	Eclipse/Maven release invocateion script.
+-->
+<project default="maven" basedir="./..">
+
+	<echo message="basedir : ${basedir}" />
+
+	<target name="maven">
+
+		<condition property="executable" value="mvn">
+			<os family="unix" />
+		</condition>
+		<condition property="executable" value="mvn.bat">
+			<os family="windows" />
+		</condition>
+
+		<exec executable="${executable}">
+
+			<!-- Release from clean state -->
+			<arg value="release:clean" />
+			<arg value="release:prepare" />
+			<arg value="release:perform" />
+
+			<!-- Do not try to resume failed release. -->
+			<arg value="--define" />
+			<arg value="resume=false" />
+
+			<!-- Avoid duplicate repository clone during release. -->
+			<arg value="--define" />
+			<arg value="localCheckout=true" />
+
+			<!-- Skip all unit tests during the release. -->
+			<arg value="--define" />
+			<arg value="arguments=--define skipTests=true" />
+
+		</exec>
+
+	</target>
+
+</project>
