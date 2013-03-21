@@ -38,7 +38,7 @@ public class DependencyGraphEdgeProvider implements EdgeProvider {
     private DependencyGraph dependencyGraph;
 
     @Inject
-    DependencyGraphEdgeProvider(Jenkins jenkins) {
+    public DependencyGraphEdgeProvider(Jenkins jenkins) {
         dependencyGraph = jenkins.getDependencyGraph();
     }
 

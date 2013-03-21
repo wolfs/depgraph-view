@@ -43,7 +43,7 @@ public class CopyArtifactEdgeProvider implements EdgeProvider {
     private boolean copyartifactIsInstalled;
 
     @Inject
-    CopyArtifactEdgeProvider(Jenkins jenkins) {
+    public CopyArtifactEdgeProvider(Jenkins jenkins) {
         copyartifactIsInstalled = jenkins.getPlugin("copyartifact") != null;
     }
 

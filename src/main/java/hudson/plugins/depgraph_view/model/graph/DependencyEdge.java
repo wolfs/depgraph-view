@@ -31,7 +31,6 @@ import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
  */
 public class DependencyEdge extends Edge {
 
-
     private final DependencyGraph.Dependency dependency;
 
     public DependencyEdge(DependencyGraph.Dependency dependency) {

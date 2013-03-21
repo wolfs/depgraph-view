@@ -45,7 +45,7 @@ public class ParameterizedTriggerSubProjectProvider implements SubProjectProvide
     private final boolean isParameterizedTriggerPluginInstalled;
 
     @Inject
-    ParameterizedTriggerSubProjectProvider(Jenkins jenkins) {
+    public ParameterizedTriggerSubProjectProvider(Jenkins jenkins) {
         isParameterizedTriggerPluginInstalled = jenkins.getPlugin("parameterized-trigger") != null;
     }
 

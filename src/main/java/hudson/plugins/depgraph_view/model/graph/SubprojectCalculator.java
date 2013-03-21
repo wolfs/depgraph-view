@@ -37,7 +37,7 @@ public class SubprojectCalculator {
     private Set<SubProjectProvider> providers;
 
     @Inject
-    SubprojectCalculator(Set<SubProjectProvider> providers) {
+    public SubprojectCalculator(Set<SubProjectProvider> providers) {
         this.providers = providers;
     }
 

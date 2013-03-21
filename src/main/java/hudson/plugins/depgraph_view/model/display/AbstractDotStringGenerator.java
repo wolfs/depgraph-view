@@ -31,9 +31,10 @@ import hudson.plugins.depgraph_view.model.graph.ProjectNode;
  * Base class for generating dot representations of the graph.
  */
 public abstract class AbstractDotStringGenerator extends AbstractGraphStringGenerator {
-    protected String subProjectColor = "#F0F0F0";
+    
+	protected String subProjectColor = "#F0F0F0";
 
-    AbstractDotStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
+    protected AbstractDotStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
         super(graph, projects2Subprojects);
     }
 

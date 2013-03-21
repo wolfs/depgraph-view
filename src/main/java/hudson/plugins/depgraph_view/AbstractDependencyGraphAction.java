@@ -64,6 +64,7 @@ import java.util.regex.Pattern;
  * Basic action for creating a Dot-Image of the DependencyGraph
  */
 public abstract class AbstractDependencyGraphAction implements Action {
+	
     private final Logger LOGGER = Logger.getLogger(Logger.class.getName());
 
     private static final Pattern EDGE_PATTERN = Pattern.compile("/(.*)/(.*[^/])(.*)");
@@ -137,10 +138,10 @@ public abstract class AbstractDependencyGraphAction implements Action {
 
 
     /**
-     * Execute the dot commando with given input and output stream
+     * Execute the dot command with given input and output stream
      * @param type the parameter for the -T option of the graphviz tools
      */
-    private void runDot(OutputStream output, InputStream input, String type)
+    protected void runDot(OutputStream output, InputStream input, String type)
             throws IOException {
         DescriptorImpl descriptor = Hudson.getInstance().getDescriptorByType(DescriptorImpl.class);
         String dotPath = descriptor.getDotExeOrDefault();

@@ -39,7 +39,7 @@ public class DependencyGraphProjectActionFactory extends TransientProjectActionF
     /**
      * Shows the connected component of the project
      */
-    public static final class DependencyGraphProjectAction extends AbstractDependencyGraphAction {
+    public static class DependencyGraphProjectAction extends AbstractDependencyGraphAction {
         final private AbstractProject<?, ?> project;
 
         public DependencyGraphProjectAction(AbstractProject<?, ?> project) {
