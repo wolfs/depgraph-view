@@ -1,11 +1,26 @@
-/target
-/work
+
+#
+# Eclipse metadata.
+#
 /.classpath
 /.project
-/*.iml
 /.settings
+
+#
+# IntelliJ metadata. 
+#
 .idea
+/*.iml
 *.ipr
 *.iws
-/jobs
 
+#
+# Maven build folder.
+#
+/target
+
+#
+# Jenkins test folders.
+#
+/work
+/jobs
