@@ -60,7 +60,6 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <!-- XXX this dep causes a build failure; cf.: https://github.com/stapler/stapler-adjunct-codemirror/commit/da995b03a1f165fef7c9d34eadb15797f58399cd -->
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>jquery</artifactId>
       <version>1.7.2-1</version>
