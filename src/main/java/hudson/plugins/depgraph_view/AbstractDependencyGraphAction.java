@@ -169,6 +169,14 @@ public abstract class AbstractDependencyGraphAction implements Action {
     public boolean isEditFunctionInJSViewEnabled() {
         return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
     }
+    
+    public String getProjectNameStripRegex() {
+        return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegex();
+    }
+    
+    public int getProjectNameStripRegexGroup() {
+        return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegexGroup();
+    }    
 
     /**
      * @return projects for which the dependency graph should be calculated

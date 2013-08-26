@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2010 Stefan Wolf
+  ~ Copyright (c) 2013 Dominik Bartholdi
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy
   ~ of this software and associated documentation files (the "Software"), to deal
@@ -20,21 +20,10 @@
   ~ THE SOFTWARE.
   -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:section title="${%Dependency Graph Viewer Configuration}">
-    <f:optionalBlock name="graphviz" title="${%Enable rendering with graphviz}" checked="${descriptor.isGraphvizEnabled()}">
-	    <f:entry title="${%Dot Executable Path}" field="dotExe">
-	      <f:textbox value="${descriptor.getDotExe()}"/>
-	    </f:entry>
-    </f:optionalBlock>
-    <f:entry field="editFunctionInJSViewEnabled" title="${%editFunctionInJSViewEnabled}">
-        <f:checkbox checked="${instance.isEditFunctionInJSViewEnabled()}" />
-    </f:entry>
-    <f:entry field="projectNameStripRegex" title="${%projectNameStripRegex}">
-        <f:textbox />
-    </f:entry>
-    <f:entry field="projectNameStripRegexGroup" title="${%projectNameStripRegexGroup}">
-        <f:textbox />
-    </f:entry>    
-  </f:section>
-</j:jelly>
+<div>
+  Einige Firmen/Organisationen haben Namenskonventionen für ihr Jobs definiert, dies kann zu sehr langen namen führen und damit zu einer unübersichtlichen Ansicht der Jobabhängigkeiten.<br />
+  Diese Option ermöglicht es mittels einer RegularExpression nur einen Teil des Jobnamens im Dependencygraph anzeigen zu lassen.   
+  Default ist <code>.*</code>, welches den ganzen Namen anzeigt.<br />
+  <code>com.comp.proj.(.*)</code> wird 'com.comp.proj' vom Namen entfernen.<br />
+  Mit der Gruppenangabe kann zusätzlich Angabe werden welche Gruppe der RegularExpression benutzt werden soll.    
+</div>

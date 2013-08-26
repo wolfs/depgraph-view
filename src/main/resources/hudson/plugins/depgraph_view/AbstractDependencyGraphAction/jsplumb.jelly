@@ -44,7 +44,11 @@
 
 			<script type='text/javascript' src='${rootURL}/plugin/depgraph-view/js/jquery.jsPlumb-1.4.1-all-min.js'></script>
 			<script type="text/javascript" src="${rootURL}/plugin/depgraph-view/js/jsPlumb_depview.js"></script>
-      <script type="text/javascript">window.depview.editEnabled=${it.isEditFunctionInJSViewEnabled()}</script>
+      <script type="text/javascript">
+      window.depview.editEnabled=${it.isEditFunctionInJSViewEnabled()};
+      window.depview.projectNameStripRegex=/${it.getProjectNameStripRegex()}/g;
+      window.depview.projectNameStripRegexGroup=${it.getProjectNameStripRegexGroup()};
+      </script>
 
 		</l:main-panel>
 	</l:layout>

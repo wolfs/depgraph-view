@@ -6,6 +6,16 @@
         // rethink the strategy
         return id.replace(/[^a-zA-Z0-9]/g,'-');
     }
+    
+    function stripName(name) {
+    	if(window.depview.projectNameStripRegex) {
+    		match = window.depview.projectNameStripRegex.exec(name);
+    		if(match && match[window.depview.projectNameStripRegexGroup]){
+    			return match[window.depview.projectNameStripRegexGroup];
+    		}
+    		return name;
+    	}
+    }    
 
     function getJobDiv(jobName) {
         return jQuery('#' + escapeId(jobName));
@@ -68,7 +78,7 @@
                         if (window.depview.editEnabled) {
                             nodeString = nodeString + '<div class="ep"/>';
                         }
-                        nodeString = nodeString + '<a href="' + node.url + '">' + node.name + '</a></div>'
+                        nodeString = nodeString + '<a href="' + node.url + '">' + stripName(node.name) + '</a></div>'
                         jQuery(nodeString).
                             addClass('window').
                             attr('id', escapeId(node.name)).
