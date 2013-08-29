@@ -78,11 +78,12 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
     }
     
     private final StripFunction stripFunction;
-            
-    public DotStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
+    
+    
+    public DotStringGenerator(Jenkins jenkins, DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
         super(graph, projects2Subprojects);
-        int projectNameStripRegexGroup = Jenkins.getInstance().getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegexGroup();
-        final String projectNameStripRegex = Jenkins.getInstance().getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegex();
+        int projectNameStripRegexGroup = jenkins.getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegexGroup();
+        final String projectNameStripRegex = jenkins.getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegex();
         
         Pattern nameStripPattern = null;
         try {
@@ -92,6 +93,10 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
         }
         
         stripFunction = new StripFunction(nameStripPattern, projectNameStripRegexGroup);
+    }
+            
+    public DotStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
+        this(Jenkins.getInstance(), graph, projects2Subprojects);
     }
 
     /**

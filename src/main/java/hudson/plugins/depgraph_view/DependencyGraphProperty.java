@@ -123,6 +123,16 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             }
         }
 
+        public synchronized void setProjectNameStripRegexGroup(int projectNameStripRegexGroup) {
+            this.projectNameStripRegexGroup = projectNameStripRegexGroup;
+            save();
+        }
+        
+        public synchronized void setProjectNameStripRegex(String projectNameStripRegex) {
+            this.projectNameStripRegex = projectNameStripRegex;
+            save();
+        }
+        
         public synchronized void setDotExe(String dotPath) {
             this.dotExe = dotPath;
             save();
