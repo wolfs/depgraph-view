@@ -30,6 +30,7 @@ import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
 import hudson.plugins.depgraph_view.model.graph.Edge;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -66,7 +67,7 @@ public abstract class AbstractGraphStringGenerator {
 
     protected static final Function<ProjectNode, String> PROJECT_NAME_FUNCTION = new Function<ProjectNode, String>() {
         @Override
-        public String apply(ProjectNode from) {
+        public String apply(@Nonnull ProjectNode from) {
             return from.getName();
         }
     };

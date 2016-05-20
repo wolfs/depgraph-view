@@ -30,6 +30,7 @@ import com.google.common.collect.Sets;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Set;
@@ -74,7 +75,7 @@ public class GraphCalculator {
     public static Iterable<ProjectNode> abstractProjectSetToProjectNodeSet(Iterable<? extends AbstractProject<?,?>> projects) {
         return Iterables.transform(projects, new Function<AbstractProject<?, ?>, ProjectNode>() {
             @Override
-            public ProjectNode apply(AbstractProject<?, ?> input) {
+            public ProjectNode apply(@Nonnull AbstractProject<?, ?> input) {
                 return node(input);
             }
         });

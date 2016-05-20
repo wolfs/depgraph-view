@@ -78,7 +78,7 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             return Messages.DependencyGraphProperty_DependencyGraphViewer();
         }
 
-        public String getDotExe() {
+        public synchronized String getDotExe() {
             return dotExe;
         }
 

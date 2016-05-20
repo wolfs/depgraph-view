@@ -22,6 +22,7 @@
 
 package hudson.plugins.depgraph_view.model.layout;
 
+import com.google.common.base.Objects;
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.graph.Graph;
 
@@ -709,6 +710,19 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 
 			return (int) (compareValue * 1000);
 
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			CellWrapper<?> that = (CellWrapper<?>) o;
+			return Double.compare(that.edgeCrossesIndicator, edgeCrossesIndicator) == 0;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(edgeCrossesIndicator);
 		}
 	}
 

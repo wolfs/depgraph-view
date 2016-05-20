@@ -35,7 +35,7 @@ public class PutEdgeOperation extends EdgeOperation {
 
     public void perform() throws IOException {
         if (source != null && target != null) {
-            final BuildTrigger buildTrigger = (BuildTrigger) source.getPublishersList().get(BuildTrigger.class);
+            final BuildTrigger buildTrigger = source.getPublishersList().get(BuildTrigger.class);
             if (buildTrigger == null) {
                 source.getPublishersList().add(new BuildTrigger(target.getName(), true));
             } else {
@@ -45,7 +45,7 @@ public class PutEdgeOperation extends EdgeOperation {
             }
             source.save();
             target.save();
-            Jenkins.getInstance().rebuildDependencyGraph();
+            Jenkins.getActiveInstance().rebuildDependencyGraph();
         }
     }
 }
