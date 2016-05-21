@@ -46,7 +46,6 @@ import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
@@ -76,9 +75,6 @@ public abstract class AbstractDependencyGraphAction implements Action {
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu();
     }
-
-    @Inject
-    private Jenkins jenkins;
 
     public void doEdge(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         String path = req.getRestOfPath();
@@ -146,9 +142,9 @@ public abstract class AbstractDependencyGraphAction implements Action {
      */
     protected void runDot(OutputStream output, InputStream input, String type)
             throws IOException {
-        DescriptorImpl descriptor = jenkins.getDescriptorByType(DescriptorImpl.class);
+        DescriptorImpl descriptor = Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class);
         String dotPath = descriptor.getDotExeOrDefault();
-        Launcher launcher = jenkins.createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
+        Launcher launcher = Jenkins.getActiveInstance().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
         try {
             launcher.launch()
                     .cmds(dotPath,"-T" + type, "-Gcharset=UTF-8", "-q1")
@@ -166,11 +162,11 @@ public abstract class AbstractDependencyGraphAction implements Action {
     }
 
     public boolean isGraphvizEnabled() {
-        return jenkins.getDescriptorByType(DescriptorImpl.class).isGraphvizEnabled();
+        return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class).isGraphvizEnabled();
     }
 
     public boolean isEditFunctionInJSViewEnabled() {
-        return jenkins.getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
+        return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
     }
 
     /**
