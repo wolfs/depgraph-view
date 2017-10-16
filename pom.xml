@@ -51,6 +51,18 @@
       <name>Stefan Wolf</name>
     </developer>
   </developers>
+    <!-- Until we use the new plugin pom (https://github.com/jenkinsci/maven-hpi-plugin/blob/49fc9860c9cccc8b23a3690c5110b84aeefed12a/hpi-archetype/pom.xml#L6...L29)
+         we need to overwrite distribution management here -->
+    <distributionManagement>
+        <repository>
+            <id>maven.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>maven.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
