@@ -1,6 +1,8 @@
 Dependency Graph Viewer
 =======================
 
+[![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins/depgraph-view-plugin/master)](https://ci.jenkins.io/blue/organizations/jenkins/Plugins%2Fdepgraph-view-plugin/branches/)
+
 Shows the dependency graph of the Hudson projects.
 
 Features
