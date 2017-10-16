@@ -37,7 +37,7 @@
   <packaging>hpi</packaging>
 
   <name>Dependency Graph Viewer Plugin</name>
-  <version>0.13</version>
+  <version>0.14-SNAPSHOT</version>
   <licenses>
     <license>
       <name>The MIT license</name>
@@ -186,7 +186,7 @@
     <connection>scm:git:git://github.com/jenkinsci/depgraph-view-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/depgraph-view-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/depgraph-view-plugin</url>
-    <tag>depgraph-view-0.13</tag>
+    <tag>HEAD</tag>
   </scm>
 
     <repositories>
