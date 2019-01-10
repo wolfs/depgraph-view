@@ -26,9 +26,11 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.501</version>
+    <version>3.31</version>
   </parent>
   <properties>
+    <java.level>8</java.level>
+    <jenkins.version>2.141</jenkins.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven-release-plugin.version>2.5.1</maven-release-plugin.version>
@@ -110,9 +112,9 @@
       <version>2.0.1</version>
     </dependency>
     <dependency>
-      <groupId>org.sonatype.sisu.inject</groupId>
+      <groupId>com.google.inject.extensions</groupId>
       <artifactId>guice-multibindings</artifactId>
-      <version>3.1.0</version>
+      <version>4.0</version>
     </dependency>
   </dependencies>
   <build>
@@ -165,12 +167,6 @@
           </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-          <groupId>org.jenkins-ci.tools</groupId>
-          <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.90</version>
-          <extensions>true</extensions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

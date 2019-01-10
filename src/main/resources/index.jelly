@@ -20,6 +20,8 @@
   ~ THE SOFTWARE.
   -->
 
+<?jelly escape-by-default='true'?>
+
 <!--
   This view is used to render the plugin list page.
 
