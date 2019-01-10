@@ -2,8 +2,6 @@ package hudson.plugins.depgraph_view.model.graph;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-
 import hudson.plugins.depgraph_view.model.operations.EdgeOperation;
 
 import org.junit.Test;

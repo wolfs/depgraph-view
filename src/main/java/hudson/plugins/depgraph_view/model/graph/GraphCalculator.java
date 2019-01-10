@@ -27,7 +27,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import hudson.model.AbstractProject;
+import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 import hudson.model.Item;
 
 import javax.inject.Inject;
@@ -58,7 +58,7 @@ public class GraphCalculator {
     private void extendGraph(DependencyGraph graph, Iterable<ProjectNode> fromProjects) {
         List<Edge> newEdges = Lists.newArrayList();
         for (ProjectNode projectNode : fromProjects) {
-            AbstractProject<?,?> project = projectNode.getProject();
+            ParameterizedJob<?,?> project = projectNode.getProject();
             if (project.hasPermission(Item.READ)) {
                 for (EdgeProvider edgeProvider : edgeProviders) {
                     Iterables.addAll(newEdges, edgeProvider.getEdgesIncidentWith(project));
@@ -71,10 +71,10 @@ public class GraphCalculator {
         }
     }
 
-    public static Iterable<ProjectNode> abstractProjectSetToProjectNodeSet(Iterable<? extends AbstractProject<?,?>> projects) {
-        return Iterables.transform(projects, new Function<AbstractProject<?, ?>, ProjectNode>() {
+    public static Iterable<ProjectNode> parameterizedJobSetToProjectNodeSet(Iterable<? extends ParameterizedJob<?,?>> projects) {
+        return Iterables.transform(projects, new Function<ParameterizedJob<?, ?>, ProjectNode>() {
             @Override
-            public ProjectNode apply(AbstractProject<?, ?> input) {
+            public ProjectNode apply(ParameterizedJob<?, ?> input) {
                 return node(input);
             }
         });

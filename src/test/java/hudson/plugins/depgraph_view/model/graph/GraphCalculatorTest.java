@@ -24,7 +24,7 @@ package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import hudson.model.AbstractProject;
+import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildTrigger;
 import org.junit.Rule;
@@ -56,12 +56,12 @@ public class GraphCalculatorTest {
         assertTrue(graph.findEdgeSet(node(project1), node(project2)).size() == 1);
     }
 
-    private void assertGraphContainsProjects(DependencyGraph graph, AbstractProject<?,?>... projects) {
-        Collection<ProjectNode> projectNodes = Lists.newArrayList(GraphCalculator.abstractProjectSetToProjectNodeSet(Arrays.asList(projects)));
+    private void assertGraphContainsProjects(DependencyGraph graph, ParameterizedJob<?,?>... projects) {
+        Collection<ProjectNode> projectNodes = Lists.newArrayList(GraphCalculator.parameterizedJobSetToProjectNodeSet(Arrays.asList(projects)));
         assertTrue(graph.getNodes().containsAll(projectNodes));
     }
 
-    private DependencyGraph generateGraph(AbstractProject<?,?> from) {
+    private DependencyGraph generateGraph(ParameterizedJob<?,?> from) {
         return new GraphCalculator(getDependencyGraphEdgeProviders()).generateGraph(Collections.singleton(node(from)));
     }
 
@@ -75,7 +75,7 @@ public class GraphCalculatorTest {
         assertTrue(graph.findEdgeSet(node(project1), node(project2)).size() == 1);
     }
 
-    private void assertHasOneDependencyEdge(DependencyGraph graph, AbstractProject<?,?> from, AbstractProject<?,?> to) {
+    private void assertHasOneDependencyEdge(DependencyGraph graph, ParameterizedJob<?,?> from, ParameterizedJob<?,?> to) {
         assertTrue(graph.findEdgeSet(node(from), node(to)).size() == 1);
     }
 
@@ -101,7 +101,7 @@ public class GraphCalculatorTest {
         return ImmutableSet.<EdgeProvider>of(new DependencyGraphEdgeProvider(j.getInstance()));
     }
 
-    private void addDependency(AbstractProject<?,?> project1, AbstractProject<?,?> project2) throws IOException {
+    private void addDependency(FreeStyleProject project1, FreeStyleProject project2) throws IOException {
         project1.getPublishersList().add(new BuildTrigger(project2.getName(), false));
     }
 }

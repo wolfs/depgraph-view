@@ -23,7 +23,7 @@
 package hudson.plugins.depgraph_view.model.graph;
 
 import hudson.ExtensionPoint;
-import hudson.model.AbstractProject;
+import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 
 /**
  * This is an extension point which makes it possible to add edges
@@ -34,5 +34,5 @@ import hudson.model.AbstractProject;
  * and {@link DependencyGraphEdgeProvider}
  */
 public interface EdgeProvider extends ExtensionPoint {
-    public Iterable<Edge> getEdgesIncidentWith(AbstractProject<?,?> project);
+    public Iterable<Edge> getEdgesIncidentWith(ParameterizedJob<?,?> project);
 }

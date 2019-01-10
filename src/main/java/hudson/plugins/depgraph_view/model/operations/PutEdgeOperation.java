@@ -45,7 +45,7 @@ public class PutEdgeOperation extends EdgeOperation {
             }
             source.save();
             target.save();
-            Jenkins.getInstance().rebuildDependencyGraph();
+            Jenkins.get().rebuildDependencyGraph();
         }
     }
 }

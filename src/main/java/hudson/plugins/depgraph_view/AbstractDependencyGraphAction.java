@@ -26,7 +26,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.inject.Injector;
 import hudson.Launcher;
 import hudson.model.AbstractModelObject;
-import hudson.model.AbstractProject;
+import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 import hudson.model.Action;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
@@ -116,7 +116,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
             Injector injector = Jenkins.lookup(Injector.class);
             GraphCalculator graphCalculator = injector.getInstance(GraphCalculator.class);
             DependencyGraph graph =
-                    graphCalculator.generateGraph(GraphCalculator.abstractProjectSetToProjectNodeSet(getProjectsForDepgraph()));
+                    graphCalculator.generateGraph(GraphCalculator.parameterizedJobSetToProjectNodeSet(getProjectsForDepgraph()));
             ListMultimap<ProjectNode, ProjectNode> projects2Subprojects =
                     injector.getInstance(SubprojectCalculator.class).generate(graph);
             stringGenerator = generatorFactory.newGenerator(graph, projects2Subprojects);
@@ -143,9 +143,9 @@ public abstract class AbstractDependencyGraphAction implements Action {
      */
     protected void runDot(OutputStream output, InputStream input, String type)
             throws IOException {
-        DescriptorImpl descriptor = Hudson.getInstance().getDescriptorByType(DescriptorImpl.class);
+        DescriptorImpl descriptor = Hudson.get().getDescriptorByType(DescriptorImpl.class);
         String dotPath = descriptor.getDotExeOrDefault();
-        Launcher launcher = Hudson.getInstance().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
+        Launcher launcher = Hudson.get().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
         try {
             launcher.launch()
                     .cmds(dotPath,"-T" + type, "-Gcharset=UTF-8", "-q1")
@@ -163,17 +163,17 @@ public abstract class AbstractDependencyGraphAction implements Action {
     }
 
     public boolean isGraphvizEnabled() {
-        return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).isGraphvizEnabled();
+        return Hudson.get().getDescriptorByType(DescriptorImpl.class).isGraphvizEnabled();
     }
 
     public boolean isEditFunctionInJSViewEnabled() {
-        return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
+        return Hudson.get().getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
     }
 
     /**
      * @return projects for which the dependency graph should be calculated
      */
-    protected abstract Collection<? extends AbstractProject<?, ?>> getProjectsForDepgraph();
+    protected abstract Collection<? extends ParameterizedJob<?, ?>> getProjectsForDepgraph();
 
     /**
      * @return title of the dependency graph page

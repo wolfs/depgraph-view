@@ -25,7 +25,7 @@ package hudson.plugins.depgraph_view.model.display;
 import com.google.common.base.Function;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
-import hudson.model.AbstractProject;
+import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
 import hudson.plugins.depgraph_view.model.graph.Edge;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
@@ -57,9 +57,9 @@ public abstract class AbstractGraphStringGenerator {
     };
 
     // Compares projects by name
-    protected static final Comparator<AbstractProject<?, ?>> PROJECT_COMPARATOR = new Comparator<AbstractProject<?, ?>>() {
+    protected static final Comparator<ParameterizedJob<?, ?>> PROJECT_COMPARATOR = new Comparator<ParameterizedJob<?, ?>>() {
         @Override
-        public int compare(AbstractProject<?, ?> o1, AbstractProject<?, ?> o2) {
+        public int compare(ParameterizedJob<?, ?> o1, ParameterizedJob<?, ?> o2) {
             return o1.getFullDisplayName().compareTo(o2.getFullDisplayName());
         }
     };

@@ -22,7 +22,7 @@
 
 package hudson.plugins.depgraph_view.model.graph;
 
-import hudson.model.DependencyGraph;
+import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 
 import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
 
@@ -31,11 +31,8 @@ import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
  */
 public class DependencyEdge extends Edge {
 
-    private final DependencyGraph.Dependency dependency;
-
-    public DependencyEdge(DependencyGraph.Dependency dependency) {
-        super(node(dependency.getUpstreamProject()), node(dependency.getDownstreamProject()));
-        this.dependency = dependency;
+    public DependencyEdge(ParameterizedJob<?, ?> upstreamProject, ParameterizedJob<?, ?> downstreamProject) {
+        super(node(upstreamProject), node(downstreamProject));
     }
 
     @Override
@@ -43,20 +40,4 @@ public class DependencyEdge extends Edge {
         return "dep";
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        DependencyEdge that = (DependencyEdge) o;
-
-        if (!dependency.equals(that.dependency)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return dependency.hashCode();
-    }
 }

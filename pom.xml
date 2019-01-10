@@ -30,7 +30,7 @@
   </parent>
   <properties>
     <java.level>8</java.level>
-    <jenkins.version>2.141</jenkins.version>
+    <jenkins.version>2.100</jenkins.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven-release-plugin.version>2.5.1</maven-release-plugin.version>
