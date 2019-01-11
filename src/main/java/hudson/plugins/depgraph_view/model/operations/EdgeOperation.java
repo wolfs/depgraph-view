@@ -33,10 +33,10 @@ public abstract class EdgeOperation {
     protected final AbstractProject<?, ?> target;
 
     public EdgeOperation(String sourceJobName, String targetJobName) {
-        this.source = Jenkins.get().getItemByFullName(sourceJobName.trim(), AbstractProject.class);
-        this.target = Jenkins.get().getItemByFullName(targetJobName, AbstractProject.class);
-        source.checkPermission(Permission.CONFIGURE);
-        target.checkPermission(Permission.CONFIGURE);
+        source = Jenkins.get().getItemByFullName(sourceJobName.trim(), AbstractProject.class);
+        target = Jenkins.get().getItemByFullName(targetJobName, AbstractProject.class);
+        if (source != null) { source.checkPermission(Permission.CONFIGURE); }
+        if (target != null) { target.checkPermission(Permission.CONFIGURE); }
     }
     
     /**
