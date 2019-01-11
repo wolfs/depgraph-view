@@ -561,7 +561,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 			// if he has the requested new grid position
 			// check the priority
 
-			CellWrapper neighborWrapper = (CellWrapper) currentLevel.get(neighborIndexInTheLevel);
+			CellWrapper<?> neighborWrapper = currentLevel.get(neighborIndexInTheLevel);
 
 			int neighborPriority = neighborWrapper.getPriority();
 
