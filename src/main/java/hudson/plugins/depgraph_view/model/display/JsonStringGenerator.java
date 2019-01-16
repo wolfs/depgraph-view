@@ -29,7 +29,6 @@ import com.google.common.collect.Maps;
 import edu.uci.ics.jung.algorithms.cluster.WeakComponentClusterer;
 import edu.uci.ics.jung.algorithms.filters.FilterUtils;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.graph.Graph;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
 import hudson.plugins.depgraph_view.model.graph.Edge;
@@ -92,15 +91,6 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
             Layout<ProjectNode, Edge> layout = new JungSugiyama<ProjectNode, Edge>(subgraph);
             layout.setSize(new Dimension(300,800));
             layout.initialize();
-            if (layout instanceof IterativeContext) {
-                IterativeContext context = (IterativeContext) layout;
-                for (int i = 0; i < 700; i ++) {
-                    context.step();
-                    if (context.done()) {
-                        break;
-                    }
-                }
-            }
 
             List<Map<String,Object>> nodeList = newArrayList();
             double minX = 300;

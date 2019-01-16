@@ -330,10 +330,11 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 		int movements = 0;
 
 		// restore the old sort
+		@SuppressWarnings("unchecked")
 		CellWrapper<?>[] levelSortBefore = currentLevel.toArray(new CellWrapper [] {});
 
 		// new sort
-		Collections.sort(currentLevel);
+		Collections.sort(currentLevel, (a, b) -> a.compareToOther(b));
 
 		// test for movements
 		for (int j = 0; j < levelSortBefore.length; j++)
@@ -593,7 +594,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 	/** cell wrapper contains all values
 	* for one node
 	*/
-	class CellWrapper<VV> implements Comparable<CellWrapper<VV>>
+	class CellWrapper<VV>
 	{
 		/** sum value for edge Crosses
 		*/
@@ -697,10 +698,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 			return priority;
 		}
 
-		/**
-		* @see java.lang.Comparable#compareTo(Object)
-		*/
-		public int compareTo(CellWrapper<VV> compare)
+		public int compareToOther(CellWrapper<VV> compare)
 		{
 			if (compare.getEdgeCrossesIndicator() == this.getEdgeCrossesIndicator())
 				return 0;

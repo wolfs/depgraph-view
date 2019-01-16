@@ -75,7 +75,7 @@ public class GraphCalculator {
         return Iterables.transform(projects, new Function<ParameterizedJob<?, ?>, ProjectNode>() {
             @Override
             public ProjectNode apply(ParameterizedJob<?, ?> input) {
-                return node(input);
+                return input != null ? node(input) : null;
             }
         });
     }

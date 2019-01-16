@@ -114,6 +114,10 @@ public abstract class AbstractDependencyGraphAction implements Action {
         AbstractGraphStringGenerator stringGenerator = null;
         if (path.startsWith("/graph.")) {
             Injector injector = Jenkins.lookup(Injector.class);
+            if (injector == null) {
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
             GraphCalculator graphCalculator = injector.getInstance(GraphCalculator.class);
             DependencyGraph graph =
                     graphCalculator.generateGraph(GraphCalculator.parameterizedJobSetToProjectNodeSet(getProjectsForDepgraph()));

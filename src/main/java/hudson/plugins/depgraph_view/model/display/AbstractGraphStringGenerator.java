@@ -67,7 +67,7 @@ public abstract class AbstractGraphStringGenerator {
     protected static final Function<ProjectNode, String> PROJECT_NAME_FUNCTION = new Function<ProjectNode, String>() {
         @Override
         public String apply(ProjectNode from) {
-            return from.getName();
+            return from != null ? from.getName() : "";
         }
     };
 
