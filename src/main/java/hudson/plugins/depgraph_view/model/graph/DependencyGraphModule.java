@@ -35,6 +35,7 @@ public class DependencyGraphModule extends AbstractModule {
     protected void configure() {
         Multibinder<EdgeProvider> edgeProviderMultibinder = Multibinder.newSetBinder(binder(), EdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(DependencyGraphEdgeProvider.class);
+        edgeProviderMultibinder.addBinding().to(BuildTriggerEdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(ReverseBuildTriggerEdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(CopyArtifactEdgeProvider.class);
         Multibinder<SubProjectProvider> subProjectProviderMultibinder = Multibinder.newSetBinder(binder(), SubProjectProvider.class);

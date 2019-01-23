@@ -27,20 +27,20 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import hudson.model.AbstractProject;
 import hudson.model.Items;
-import hudson.triggers.Trigger;
+import hudson.tasks.BuildTrigger;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
-import jenkins.triggers.ReverseBuildTrigger;
 
 /**
- * {@link EdgeProvider} yielding the dependencies of the Jenkins
- * ReverseBuildTrigger property
+ * {@link EdgeProvider} yielding the dependencies of the Jenkins BuildTrigger
+ * property
  */
-public class ReverseBuildTriggerEdgeProvider implements EdgeProvider {
+public class BuildTriggerEdgeProvider implements EdgeProvider {
 
 	@Inject
-	public ReverseBuildTriggerEdgeProvider(Jenkins jenkins) {
+	public BuildTriggerEdgeProvider(Jenkins jenkins) {
 	}
 
 	@Override
@@ -48,22 +48,22 @@ public class ReverseBuildTriggerEdgeProvider implements EdgeProvider {
 
 		List<Edge> edges = new ArrayList<>();
 
-		for (Trigger<?> trigger : project.getTriggers().values()) {
-			if (trigger instanceof ReverseBuildTrigger) {
-				for (ParameterizedJob<?, ?> upstream : Items.fromNameList(project.getParent(),
-						((ReverseBuildTrigger) trigger).getUpstreamProjects(), ParameterizedJob.class)) {
-					edges.add(new DependencyEdge(upstream, project));
+		if (project instanceof AbstractProject<?, ?>) {
+			BuildTrigger buildTrigger = ((AbstractProject<?, ?>) project).getPublishersList().get(BuildTrigger.class);
+			if (buildTrigger != null) {
+				for (ParameterizedJob<?, ?> downstream : Items.fromNameList(project.getParent(),
+						buildTrigger.getChildProjectsValue(), ParameterizedJob.class)) {
+					edges.add(new DependencyEdge(project, downstream));
 				}
 			}
 		}
 
-		for (ParameterizedJob<?, ?> downstream : project.getParent().allItems(ParameterizedJob.class)) {
-			for (Trigger<?> trigger : downstream.getTriggers().values()) {
-				if (trigger instanceof ReverseBuildTrigger && Items.fromNameList(project.getParent(),
-						((ReverseBuildTrigger) trigger).getUpstreamProjects(), ParameterizedJob.class)
-						.contains(project)) {
-					edges.add(new DependencyEdge(project, downstream));
-				}
+		for (AbstractProject<?, ?> upstream : project.getParent().allItems(AbstractProject.class)) {
+			BuildTrigger buildTrigger = upstream.getPublishersList().get(BuildTrigger.class);
+			if (buildTrigger != null && Items
+					.fromNameList(upstream.getParent(), buildTrigger.getChildProjectsValue(), ParameterizedJob.class)
+					.contains(project)) {
+				edges.add(new DependencyEdge(upstream, project));
 			}
 		}
 
