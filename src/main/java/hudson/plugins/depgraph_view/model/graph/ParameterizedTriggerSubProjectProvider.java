@@ -23,7 +23,7 @@
 package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.common.base.Preconditions;
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
+import hudson.model.Job;
 import hudson.model.FreeStyleProject;
 import hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig;
 import hudson.plugins.parameterizedtrigger.TriggerBuilder;
@@ -50,7 +50,7 @@ public class ParameterizedTriggerSubProjectProvider implements SubProjectProvide
     }
 
     @Override
-    public Iterable<ProjectNode> getSubProjectsOf(ParameterizedJob<?, ?> project) {
+    public Iterable<ProjectNode> getSubProjectsOf(Job<?, ?> project) {
         Preconditions.checkNotNull(project);
         if (!isParameterizedTriggerPluginInstalled) {
             return Collections.emptyList();
@@ -64,8 +64,8 @@ public class ParameterizedTriggerSubProjectProvider implements SubProjectProvide
                 if (builder instanceof TriggerBuilder) {
                     TriggerBuilder tBuilder = (TriggerBuilder) builder;
                     for (BlockableBuildTriggerConfig config : tBuilder.getConfigs()) {
-                        for (ParameterizedJob<?,?> ParameterizedJob : config.getProjectList(null)) {
-                            subProjects.add(node(ParameterizedJob) );
+                        for (Job<?, ?> job : config.getProjectList(null)) {
+                            subProjects.add(node(job) );
                         }
                     }
                 }

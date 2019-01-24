@@ -28,7 +28,7 @@ import hudson.model.Action;
 import hudson.model.TopLevelItem;
 import hudson.model.TransientViewActionFactory;
 import hudson.model.View;
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
+import hudson.model.Job;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,12 +53,12 @@ public class DependencyGraphViewActionFactory extends TransientViewActionFactory
         }
 
         @Override
-        protected Collection<? extends ParameterizedJob<?, ?>> getProjectsForDepgraph() {
+        protected Collection<? extends Job<?, ?>> getProjectsForDepgraph() {
             Collection<TopLevelItem> items = view.getItems();
-            Collection<ParameterizedJob<?,?>> projects = new ArrayList<ParameterizedJob<?,?>>();
+            Collection<Job<?,?>> projects = new ArrayList<Job<?,?>>();
             for (TopLevelItem item : items) {
-                if (item instanceof ParameterizedJob<?, ?>) {
-                    projects.add((ParameterizedJob<?, ?>) item);
+                if (item instanceof Job<?, ?>) {
+                    projects.add((Job<?, ?>) item);
                 }
             }
             return projects;

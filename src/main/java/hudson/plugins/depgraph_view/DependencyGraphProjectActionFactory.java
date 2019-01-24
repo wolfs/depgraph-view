@@ -25,7 +25,7 @@ package hudson.plugins.depgraph_view;
 import hudson.Extension;
 import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
+import hudson.model.Job;
 import hudson.model.Action;
 import hudson.model.TransientProjectActionFactory;
 
@@ -41,15 +41,15 @@ public class DependencyGraphProjectActionFactory extends TransientProjectActionF
      * Shows the connected component of the project
      */
     public static class DependencyGraphProjectAction extends AbstractDependencyGraphAction {
-        final private ParameterizedJob<?, ?> project;
+        final private Job<?, ?> project;
 
-        public DependencyGraphProjectAction(ParameterizedJob<?, ?> project) {
+        public DependencyGraphProjectAction(Job<?, ?> project) {
             this.project = project;
         }
 
         @Override
-        protected Collection<ParameterizedJob<?, ?>> getProjectsForDepgraph() {
-            return Collections.<ParameterizedJob<?, ?>>singleton(project);
+        protected Collection<Job<?, ?>> getProjectsForDepgraph() {
+            return Collections.<Job<?, ?>>singleton(project);
         }
 
         @Override
@@ -59,7 +59,7 @@ public class DependencyGraphProjectActionFactory extends TransientProjectActionF
 
         @Override
         public AbstractModelObject getParentObject() {
-        	return (project instanceof AbstractModelObject) ? (AbstractModelObject) project : null;
+        	return project;
         }
     }
 

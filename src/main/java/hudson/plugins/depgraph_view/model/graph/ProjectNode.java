@@ -23,19 +23,19 @@
 package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.common.base.Preconditions;
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
+import hudson.model.Job;
 
 /**
  * A Node in the DependencyGraph, which corresponds to a Project
  */
 public class ProjectNode {
-    private final ParameterizedJob<?,?> project;
+    private final Job<?,?> project;
 
-    public static ProjectNode node(ParameterizedJob<?, ?> project) {
+    public static ProjectNode node(Job<?, ?> project) {
         return new ProjectNode(project);
     }
 
-    public ProjectNode(ParameterizedJob<?, ?> project) {
+    public ProjectNode(Job<?, ?> project) {
         Preconditions.checkNotNull(project);
         this.project = project;
     }
@@ -44,7 +44,7 @@ public class ProjectNode {
         return project.getFullDisplayName();
     }
 
-    public ParameterizedJob<?, ?> getProject() {
+    public Job<?, ?> getProject() {
         return project;
     }
 

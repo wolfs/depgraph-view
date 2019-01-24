@@ -22,7 +22,7 @@
 
 package hudson.plugins.depgraph_view.model.graph;
 
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
+import hudson.model.Job;
 
 import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
 
@@ -31,7 +31,7 @@ import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
  */
 public class DependencyEdge extends Edge {
 
-    public DependencyEdge(ParameterizedJob<?, ?> upstreamProject, ParameterizedJob<?, ?> downstreamProject) {
+    public DependencyEdge(Job<?, ?> upstreamProject, Job<?, ?> downstreamProject) {
         super(node(upstreamProject), node(downstreamProject));
     }
 

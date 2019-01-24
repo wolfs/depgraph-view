@@ -29,44 +29,55 @@ import javax.inject.Inject;
 
 import hudson.model.AbstractProject;
 import hudson.model.Items;
+import hudson.model.Job;
 import hudson.tasks.BuildTrigger;
 import jenkins.model.Jenkins;
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 
 /**
- * {@link EdgeProvider} yielding the dependencies of the Jenkins BuildTrigger
- * property
+ * {@link EdgeProvider} yielding the dependencies of the Jenkins BuildTrigger property
  */
 public class BuildTriggerEdgeProvider implements EdgeProvider {
 
+	private final Jenkins jenkins;
+
 	@Inject
 	public BuildTriggerEdgeProvider(Jenkins jenkins) {
+		this.jenkins = jenkins;
 	}
 
 	@Override
-	public Iterable<Edge> getEdgesIncidentWith(ParameterizedJob<?, ?> project) {
+	public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
 
+		List<Edge> edges = getUpstreamEdges(project);
+		edges.addAll(getDownstreamEdges(project));
+
+		return edges;
+	}
+
+	private List<Edge> getUpstreamEdges(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
+		for (AbstractProject<?, ?> upstream : jenkins.allItems(AbstractProject.class)) {
+			BuildTrigger buildTrigger = upstream.getPublishersList().get(BuildTrigger.class);
+			if (buildTrigger != null
+					&& Items.fromNameList(upstream.getParent(), buildTrigger.getChildProjectsValue(), Job.class)
+							.contains(project)) {
+				edges.add(new DependencyEdge(upstream, project));
+			}
+		}
+		return edges;
+	}
 
+	private List<Edge> getDownstreamEdges(Job<?, ?> project) {
+		List<Edge> edges = new ArrayList<>();
 		if (project instanceof AbstractProject<?, ?>) {
 			BuildTrigger buildTrigger = ((AbstractProject<?, ?>) project).getPublishersList().get(BuildTrigger.class);
 			if (buildTrigger != null) {
-				for (ParameterizedJob<?, ?> downstream : Items.fromNameList(project.getParent(),
-						buildTrigger.getChildProjectsValue(), ParameterizedJob.class)) {
+				for (Job<?, ?> downstream : Items.fromNameList(project.getParent(),
+						buildTrigger.getChildProjectsValue(), Job.class)) {
 					edges.add(new DependencyEdge(project, downstream));
 				}
 			}
 		}
-
-		for (AbstractProject<?, ?> upstream : project.getParent().allItems(AbstractProject.class)) {
-			BuildTrigger buildTrigger = upstream.getPublishersList().get(BuildTrigger.class);
-			if (buildTrigger != null && Items
-					.fromNameList(upstream.getParent(), buildTrigger.getChildProjectsValue(), ParameterizedJob.class)
-					.contains(project)) {
-				edges.add(new DependencyEdge(upstream, project));
-			}
-		}
-
 		return edges;
 	}
 

@@ -23,7 +23,7 @@
 package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.common.collect.Sets;
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
+import hudson.model.Job;
 import hudson.model.FreeStyleProject;
 import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.tasks.Builder;
@@ -48,7 +48,7 @@ public class CopyArtifactEdgeProvider implements EdgeProvider {
     }
 
     @Override
-    public Iterable<Edge> getEdgesIncidentWith(ParameterizedJob<?, ?> project) {
+    public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
         Set<Edge> artifactEdges = Sets.newHashSet();
 
         if (copyartifactIsInstalled) {
@@ -64,7 +64,7 @@ public class CopyArtifactEdgeProvider implements EdgeProvider {
                         CopyArtifact caBuilder = (CopyArtifact) builder;
                         String projectName = caBuilder.getProjectName();
                         Jenkins jenkins = Jenkins.get();
-                        ParameterizedJob<?,?> projectFromName = jenkins.getItem(projectName, project.getParent(), ParameterizedJob.class);
+                        Job<?,?> projectFromName = jenkins.getItem(projectName, project.getParent(), Job.class);
 
                         if (projectFromName != null) {
                             artifactEdges.add(

@@ -28,45 +28,61 @@ import java.util.List;
 import javax.inject.Inject;
 
 import hudson.model.Items;
+import hudson.model.Job;
 import hudson.triggers.Trigger;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 import jenkins.triggers.ReverseBuildTrigger;
 
 /**
- * {@link EdgeProvider} yielding the dependencies of the Jenkins
- * ReverseBuildTrigger property
+ * {@link EdgeProvider} yielding the dependencies of the Jenkins ReverseBuildTrigger property
  */
 public class ReverseBuildTriggerEdgeProvider implements EdgeProvider {
 
+	private final Jenkins jenkins;
+
 	@Inject
 	public ReverseBuildTriggerEdgeProvider(Jenkins jenkins) {
+		this.jenkins = jenkins;
 	}
 
 	@Override
-	public Iterable<Edge> getEdgesIncidentWith(ParameterizedJob<?, ?> project) {
+	public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
 
+		List<Edge> edges = getUpstreamEdges(project);
+		edges.addAll(getDownstreamEdges(project));
+
+		return edges;
+	}
+
+	private List<Edge> getUpstreamEdges(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
-
-		for (Trigger<?> trigger : project.getTriggers().values()) {
-			if (trigger instanceof ReverseBuildTrigger) {
-				for (ParameterizedJob<?, ?> upstream : Items.fromNameList(project.getParent(),
-						((ReverseBuildTrigger) trigger).getUpstreamProjects(), ParameterizedJob.class)) {
-					edges.add(new DependencyEdge(upstream, project));
+		if (project instanceof ParameterizedJob<?, ?>) {
+			for (Trigger<?> trigger : ((ParameterizedJob<?, ?>) project).getTriggers().values()) {
+				if (trigger instanceof ReverseBuildTrigger) {
+					for (Job<?, ?> upstream : Items.fromNameList(project.getParent(),
+							((ReverseBuildTrigger) trigger).getUpstreamProjects(), Job.class)) {
+						edges.add(new DependencyEdge(upstream, project));
+					}
 				}
 			}
 		}
+		return edges;
+	}
 
-		for (ParameterizedJob<?, ?> downstream : project.getParent().allItems(ParameterizedJob.class)) {
+	private List<Edge> getDownstreamEdges(Job<?, ?> project) {
+		List<Edge> edges = new ArrayList<>();
+		for (ParameterizedJob<?, ?> downstream : jenkins.allItems(ParameterizedJob.class)) {
 			for (Trigger<?> trigger : downstream.getTriggers().values()) {
-				if (trigger instanceof ReverseBuildTrigger && Items.fromNameList(project.getParent(),
-						((ReverseBuildTrigger) trigger).getUpstreamProjects(), ParameterizedJob.class)
-						.contains(project)) {
-					edges.add(new DependencyEdge(project, downstream));
+				if (downstream instanceof Job<?, ?>
+						&& trigger instanceof ReverseBuildTrigger && Items
+								.fromNameList(project.getParent(),
+										((ReverseBuildTrigger) trigger).getUpstreamProjects(), Job.class)
+								.contains(project)) {
+					edges.add(new DependencyEdge(project, (Job<?, ?>) downstream));
 				}
 			}
 		}
-
 		return edges;
 	}
 

@@ -24,7 +24,7 @@ package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
+import hudson.model.Job;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildTrigger;
 import org.junit.Rule;
@@ -56,12 +56,12 @@ public class GraphCalculatorTest {
         assertTrue(graph.findEdgeSet(node(project1), node(project2)).size() == 1);
     }
 
-    private void assertGraphContainsProjects(DependencyGraph graph, ParameterizedJob<?,?>... projects) {
-        Collection<ProjectNode> projectNodes = Lists.newArrayList(GraphCalculator.parameterizedJobSetToProjectNodeSet(Arrays.asList(projects)));
+    private void assertGraphContainsProjects(DependencyGraph graph, Job<?,?>... projects) {
+        Collection<ProjectNode> projectNodes = Lists.newArrayList(GraphCalculator.jobSetToProjectNodeSet(Arrays.asList(projects)));
         assertTrue(graph.getNodes().containsAll(projectNodes));
     }
 
-    private DependencyGraph generateGraph(ParameterizedJob<?,?> from) {
+    private DependencyGraph generateGraph(Job<?,?> from) {
         return new GraphCalculator(getDependencyGraphEdgeProviders()).generateGraph(Collections.singleton(node(from)));
     }
 
@@ -75,7 +75,7 @@ public class GraphCalculatorTest {
         assertTrue(graph.findEdgeSet(node(project1), node(project2)).size() == 1);
     }
 
-    private void assertHasOneDependencyEdge(DependencyGraph graph, ParameterizedJob<?,?> from, ParameterizedJob<?,?> to) {
+    private void assertHasOneDependencyEdge(DependencyGraph graph, Job<?,?> from, Job<?,?> to) {
         assertTrue(graph.findEdgeSet(node(from), node(to)).size() == 1);
     }
 

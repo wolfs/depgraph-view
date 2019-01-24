@@ -24,8 +24,8 @@ package hudson.plugins.depgraph_view.model.graph;
 
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
+import hudson.model.Job;
 import jenkins.model.Jenkins;
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class DependencyGraphEdgeProvider implements EdgeProvider {
     }
 
     @Override
-    public Iterable<Edge> getEdgesIncidentWith(ParameterizedJob<?, ?> project) {
+    public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
         List<DependencyGraph.Dependency> dependencies = new ArrayList<DependencyGraph.Dependency>();
         if (project instanceof AbstractProject<?, ?>) {
             dependencies.addAll(dependencyGraph.getDownstreamDependencies((AbstractProject<?, ?>)project));

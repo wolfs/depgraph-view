@@ -23,7 +23,7 @@
 package hudson.plugins.depgraph_view.model.graph;
 
 import hudson.ExtensionPoint;
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
+import hudson.model.Job;
 
 /**
  * This is an extension point which makes it possible to subprojects
@@ -34,5 +34,5 @@ import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
  * and {@link ParameterizedTriggerSubProjectProvider}
  */
 public interface SubProjectProvider extends ExtensionPoint {
-    public Iterable<ProjectNode> getSubProjectsOf(ParameterizedJob<?,?> project);
+    public Iterable<ProjectNode> getSubProjectsOf(Job<?,?> project);
 }

@@ -26,7 +26,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.inject.Injector;
 import hudson.Launcher;
 import hudson.model.AbstractModelObject;
-import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
+import hudson.model.Job;
 import hudson.model.Action;
 import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
@@ -120,7 +120,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
             }
             GraphCalculator graphCalculator = injector.getInstance(GraphCalculator.class);
             DependencyGraph graph =
-                    graphCalculator.generateGraph(GraphCalculator.parameterizedJobSetToProjectNodeSet(getProjectsForDepgraph()));
+                    graphCalculator.generateGraph(GraphCalculator.jobSetToProjectNodeSet(getProjectsForDepgraph()));
             ListMultimap<ProjectNode, ProjectNode> projects2Subprojects =
                     injector.getInstance(SubprojectCalculator.class).generate(graph);
             stringGenerator = generatorFactory.newGenerator(graph, projects2Subprojects);
@@ -177,7 +177,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
     /**
      * @return projects for which the dependency graph should be calculated
      */
-    protected abstract Collection<? extends ParameterizedJob<?, ?>> getProjectsForDepgraph();
+    protected abstract Collection<? extends Job<?, ?>> getProjectsForDepgraph();
 
     /**
      * @return title of the dependency graph page
