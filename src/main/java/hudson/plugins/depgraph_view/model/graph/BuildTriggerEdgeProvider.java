@@ -34,7 +34,7 @@ import hudson.tasks.BuildTrigger;
 import jenkins.model.Jenkins;
 
 /**
- * {@link EdgeProvider} yielding the dependencies of the Jenkins BuildTrigger property
+ * {@link EdgeProvider} yielding the dependencies of the Jenkins {@link BuildTrigger} publisher.
  */
 public class BuildTriggerEdgeProvider implements EdgeProvider {
 

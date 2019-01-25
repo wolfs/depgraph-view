@@ -35,7 +35,7 @@ import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 import jenkins.triggers.ReverseBuildTrigger;
 
 /**
- * {@link EdgeProvider} yielding the dependencies of the Jenkins ReverseBuildTrigger property
+ * {@link EdgeProvider} yielding the dependencies of the Jenkins {@link ReverseBuildTrigger} trigger.
  */
 public class ReverseBuildTriggerEdgeProvider implements EdgeProvider {
 

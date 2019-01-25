@@ -36,7 +36,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 
 /**
- * {@link EdgeProvider} yielding the dependencies of the Jenkins JobFanIn Plugin FanInReverseBuildTrigger property
+ * {@link EdgeProvider} yielding the dependencies of the JobFanIn Plugin {@link FanInReverseBuildTrigger} trigger.
  */
 public class FanInReverseBuildTriggerEdgeProvider implements EdgeProvider {
 
