@@ -25,6 +25,7 @@ package hudson.plugins.depgraph_view.model.graph;
 import com.google.common.base.Preconditions;
 import hudson.model.Job;
 import hudson.model.FreeStyleProject;
+import hudson.model.Items;
 import hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig;
 import hudson.plugins.parameterizedtrigger.TriggerBuilder;
 import hudson.tasks.Builder;
@@ -64,7 +65,7 @@ public class ParameterizedTriggerSubProjectProvider implements SubProjectProvide
                 if (builder instanceof TriggerBuilder) {
                     TriggerBuilder tBuilder = (TriggerBuilder) builder;
                     for (BlockableBuildTriggerConfig config : tBuilder.getConfigs()) {
-                        for (Job<?, ?> job : config.getProjectList(null)) {
+                        for (Job<?, ?> job : Items.fromNameList(project.getParent(), config.getProjects(), Job.class)) {
                             subProjects.add(node(job) );
                         }
                     }
