@@ -27,8 +27,8 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import hudson.model.Job;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
-import hudson.plugins.depgraph_view.model.graph.Edge;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
+import hudson.plugins.depgraph_view.model.graph.edge.Edge;
 
 import java.util.ArrayList;
 import java.util.Collections;

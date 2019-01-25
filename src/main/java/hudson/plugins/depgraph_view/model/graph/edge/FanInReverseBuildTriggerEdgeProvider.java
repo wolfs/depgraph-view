@@ -20,29 +20,30 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.depgraph_view.model.graph;
+package hudson.plugins.depgraph_view.model.graph.edge;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
-import hudson.model.AbstractProject;
+import org.lonkar.jobfanin.FanInReverseBuildTrigger;
+
 import hudson.model.Items;
 import hudson.model.Job;
-import hudson.plugins.parameterizedtrigger.BuildTrigger;
-import hudson.plugins.parameterizedtrigger.BuildTriggerConfig;
+import hudson.triggers.Trigger;
 import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 
 /**
- * {@link EdgeProvider} yielding the dependencies of the Parameterized Trigger Plugin {@link BuildTrigger} publisher.
+ * {@link EdgeProvider} yielding the dependencies of the JobFanIn Plugin {@link FanInReverseBuildTrigger} trigger.
  */
-public class ParameterizedTriggerEdgeProvider implements EdgeProvider {
+public class FanInReverseBuildTriggerEdgeProvider implements EdgeProvider {
 
 	private final Jenkins jenkins;
 
 	@Inject
-	public ParameterizedTriggerEdgeProvider(Jenkins jenkins) {
+	public FanInReverseBuildTriggerEdgeProvider(Jenkins jenkins) {
 		this.jenkins = jenkins;
 	}
 
@@ -57,11 +58,11 @@ public class ParameterizedTriggerEdgeProvider implements EdgeProvider {
 
 	private List<Edge> getUpstreamEdges(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
-		for (AbstractProject<?, ?> upstream : jenkins.allItems(AbstractProject.class)) {
-			BuildTrigger buildTrigger = upstream.getPublishersList().get(BuildTrigger.class);
-			if (buildTrigger != null) {
-				for (BuildTriggerConfig config : buildTrigger.getConfigs()) {
-					if (Items.fromNameList(upstream.getParent(), config.getProjects(), Job.class).contains(project)) {
+		if (project instanceof ParameterizedJob<?, ?>) {
+			for (Trigger<?> trigger : ((ParameterizedJob<?, ?>) project).getTriggers().values()) {
+				if (trigger instanceof FanInReverseBuildTrigger) {
+					for (Job<?, ?> upstream : Items.fromNameList(project.getParent(),
+							((FanInReverseBuildTrigger) trigger).getUpstreamProjects(), Job.class)) {
 						edges.add(new DependencyEdge(upstream, project));
 					}
 				}
@@ -72,14 +73,13 @@ public class ParameterizedTriggerEdgeProvider implements EdgeProvider {
 
 	private List<Edge> getDownstreamEdges(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
-		if (project instanceof AbstractProject<?, ?>) {
-			BuildTrigger buildTrigger = ((AbstractProject<?, ?>) project).getPublishersList().get(BuildTrigger.class);
-			if (buildTrigger != null) {
-				for (BuildTriggerConfig config : buildTrigger.getConfigs()) {
-					for (Job<?, ?> downstream : Items.fromNameList(project.getParent(), config.getProjects(),
-							Job.class)) {
-						edges.add(new DependencyEdge(project, downstream));
-					}
+		for (ParameterizedJob<?, ?> downstream : jenkins.allItems(ParameterizedJob.class)) {
+			for (Trigger<?> trigger : downstream.getTriggers().values()) {
+				if (downstream instanceof Job<?, ?> && trigger instanceof FanInReverseBuildTrigger
+						&& Items.fromNameList(project.getParent(),
+								((FanInReverseBuildTrigger) trigger).getUpstreamProjects(), Job.class)
+								.contains(project)) {
+					edges.add(new DependencyEdge(project, (Job<?, ?>) downstream));
 				}
 			}
 		}

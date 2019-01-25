@@ -20,28 +20,30 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.depgraph_view.model.graph;
+package hudson.plugins.depgraph_view.model.graph.edge;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
-import hudson.model.AbstractProject;
 import hudson.model.Items;
 import hudson.model.Job;
-import hudson.tasks.BuildTrigger;
+import hudson.model.Project;
+import hudson.plugins.parameterizedtrigger.BuildTriggerConfig;
+import hudson.plugins.parameterizedtrigger.TriggerBuilder;
+import hudson.tasks.Builder;
 import jenkins.model.Jenkins;
 
 /**
- * {@link EdgeProvider} yielding the dependencies of the Jenkins {@link BuildTrigger} publisher.
+ * {@link EdgeProvider} yielding the dependencies of the Parameterized Trigger Plugin {@link TriggerBuilder} builder.
  */
-public class BuildTriggerEdgeProvider implements EdgeProvider {
+public class ParameterizedTriggerBuilderEdgeProvider implements EdgeProvider {
 
 	private final Jenkins jenkins;
 
 	@Inject
-	public BuildTriggerEdgeProvider(Jenkins jenkins) {
+	public ParameterizedTriggerBuilderEdgeProvider(Jenkins jenkins) {
 		this.jenkins = jenkins;
 	}
 
@@ -56,12 +58,16 @@ public class BuildTriggerEdgeProvider implements EdgeProvider {
 
 	private List<Edge> getUpstreamEdges(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
-		for (AbstractProject<?, ?> upstream : jenkins.allItems(AbstractProject.class)) {
-			BuildTrigger buildTrigger = upstream.getPublishersList().get(BuildTrigger.class);
-			if (buildTrigger != null
-					&& Items.fromNameList(upstream.getParent(), buildTrigger.getChildProjectsValue(), Job.class)
-							.contains(project)) {
-				edges.add(new DependencyEdge(upstream, project));
+		for (Project<?, ?> upstream : jenkins.allItems(Project.class)) {
+			for (Builder builder : upstream.getBuilders()) {
+				if (builder instanceof TriggerBuilder) {
+					for (BuildTriggerConfig config : ((TriggerBuilder) builder).getConfigs()) {
+						if (Items.fromNameList(upstream.getParent(), config.getProjects(), Job.class)
+								.contains(project)) {
+							edges.add(new DependencyEdge(upstream, project));
+						}
+					}
+				}
 			}
 		}
 		return edges;
@@ -69,12 +75,15 @@ public class BuildTriggerEdgeProvider implements EdgeProvider {
 
 	private List<Edge> getDownstreamEdges(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
-		if (project instanceof AbstractProject<?, ?>) {
-			BuildTrigger buildTrigger = ((AbstractProject<?, ?>) project).getPublishersList().get(BuildTrigger.class);
-			if (buildTrigger != null) {
-				for (Job<?, ?> downstream : Items.fromNameList(project.getParent(),
-						buildTrigger.getChildProjectsValue(), Job.class)) {
-					edges.add(new DependencyEdge(project, downstream));
+		if (project instanceof Project<?, ?>) {
+			for (Builder builder : ((Project<?, ?>) project).getBuilders()) {
+				if (builder instanceof TriggerBuilder) {
+					for (BuildTriggerConfig config : ((TriggerBuilder) builder).getConfigs()) {
+						for (Job<?, ?> downstream : Items.fromNameList(project.getParent(), config.getProjects(),
+								Job.class)) {
+							edges.add(new DependencyEdge(project, downstream));
+						}
+					}
 				}
 			}
 		}

@@ -20,49 +20,20 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.depgraph_view.model.graph;
+package hudson.plugins.depgraph_view.model.graph.edge;
 
-import com.google.common.collect.ImmutableSet;
+import hudson.ExtensionPoint;
+import hudson.model.Job;
+import hudson.plugins.depgraph_view.model.graph.DependencyGraphModule;
 
 /**
- * Representation of an edge in the DependencyGraph
+ * This is an extension point which makes it possible to add edges
+ * to the DependencyGraph which gets drawn. Note that in order to add your own
+ * EdgeProvider you must not annotate the corresponding subclass with {@link hudson.Extension}
+ * but instead add a {@link com.google.inject.Module} with a {@link com.google.inject.multibindings.Multibinder}
+ * which has the {@link hudson.Extension} annotation. For example see {@link DependencyGraphModule}
+ * and {@link DependencyGraphEdgeProvider}
  */
-public abstract class Edge {
-    public final ProjectNode source;
-    public final ProjectNode target;
-
-    public Edge(ProjectNode source, ProjectNode target) {
-        this.source = source;
-        this.target = target;
-    }
-
-    public ImmutableSet<ProjectNode> getNodes() {
-        return ImmutableSet.of(source, target);
-    }
-
-    public abstract String getType();
-
-    public String getColor() {
-        return "black";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Edge edge = (Edge) o;
-
-        if (!source.equals(edge.source)) return false;
-        if (!target.equals(edge.target)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = source.hashCode();
-        result = 31 * result + target.hashCode();
-        return result;
-    }
+public interface EdgeProvider extends ExtensionPoint {
+    public Iterable<Edge> getEdgesIncidentWith(Job<?,?> project);
 }

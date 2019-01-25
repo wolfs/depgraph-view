@@ -31,8 +31,8 @@ import edu.uci.ics.jung.algorithms.filters.FilterUtils;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
-import hudson.plugins.depgraph_view.model.graph.Edge;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
+import hudson.plugins.depgraph_view.model.graph.edge.Edge;
 import hudson.plugins.depgraph_view.model.layout.JungSugiyama;
 import net.sf.json.JSONObject;
 

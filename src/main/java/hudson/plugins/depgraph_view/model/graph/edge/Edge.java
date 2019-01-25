@@ -20,23 +20,51 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.depgraph_view.model.graph;
+package hudson.plugins.depgraph_view.model.graph.edge;
+
+import com.google.common.collect.ImmutableSet;
+
+import hudson.plugins.depgraph_view.model.graph.ProjectNode;
 
 /**
- * Represents an {@link Edge} given by the {@link hudson.plugins.copyartifact.CopyArtifact} Builder.
+ * Representation of an edge in the DependencyGraph
  */
-public class CopyArtifactEdge extends Edge {
-    public CopyArtifactEdge(ProjectNode source, ProjectNode target) {
-        super(source, target);
+public abstract class Edge {
+    public final ProjectNode source;
+    public final ProjectNode target;
+
+    public Edge(ProjectNode source, ProjectNode target) {
+        this.source = source;
+        this.target = target;
     }
 
-    @Override
-    public String getType() {
-        return "copy";
+    public ImmutableSet<ProjectNode> getNodes() {
+        return ImmutableSet.of(source, target);
     }
 
-    @Override
+    public abstract String getType();
+
     public String getColor() {
-        return "lightblue";
+        return "black";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Edge edge = (Edge) o;
+
+        if (!source.equals(edge.source)) return false;
+        if (!target.equals(edge.target)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = source.hashCode();
+        result = 31 * result + target.hashCode();
+        return result;
     }
 }

@@ -25,6 +25,8 @@ package hudson.plugins.depgraph_view.model.graph;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import hudson.model.Job;
+import hudson.plugins.depgraph_view.model.graph.edge.DependencyGraphEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.EdgeProvider;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildTrigger;
 import org.junit.Rule;

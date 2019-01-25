@@ -28,6 +28,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import hudson.model.Job;
+import hudson.plugins.depgraph_view.model.graph.edge.Edge;
+import hudson.plugins.depgraph_view.model.graph.edge.EdgeProvider;
 import hudson.model.Item;
 
 import javax.inject.Inject;

@@ -25,6 +25,14 @@ package hudson.plugins.depgraph_view.model.graph;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 import hudson.Extension;
+import hudson.plugins.depgraph_view.model.graph.edge.BuildTriggerEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.CopyArtifactEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.DependencyGraphEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.EdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.FanInReverseBuildTriggerEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.ParameterizedTriggerBuilderEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.ParameterizedTriggerEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.ReverseBuildTriggerEdgeProvider;
 
 /**
  * Guice Module for the DependencyGraph

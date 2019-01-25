@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.depgraph_view.model.graph;
+package hudson.plugins.depgraph_view.model.graph.edge;
 
 import com.google.common.collect.Sets;
 import hudson.model.Job;
