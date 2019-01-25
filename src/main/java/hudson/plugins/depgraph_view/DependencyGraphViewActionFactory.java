@@ -30,10 +30,13 @@ import hudson.model.TransientViewActionFactory;
 import hudson.model.View;
 import hudson.model.Job;
 
+import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Factory to a dependency graph view action to all views
@@ -55,10 +58,12 @@ public class DependencyGraphViewActionFactory extends TransientViewActionFactory
         @Override
         protected Collection<? extends Job<?, ?>> getProjectsForDepgraph() {
             Collection<TopLevelItem> items = view.getItems();
-            Collection<Job<?,?>> projects = new ArrayList<Job<?,?>>();
+            Collection<Job<?,?>> projects = new ArrayList<>();
             for (TopLevelItem item : items) {
                 if (item instanceof Job<?, ?>) {
                     projects.add((Job<?, ?>) item);
+                } else if (item instanceof WorkflowMultiBranchProject) {
+                	projects.addAll(item.getAllJobs().stream().map(i -> (Job<?, ?>) i).collect(Collectors.toList()));
                 }
             }
             return projects;
