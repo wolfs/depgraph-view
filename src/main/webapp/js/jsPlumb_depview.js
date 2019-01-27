@@ -35,7 +35,7 @@
                 } ], [ "Dot", {
                     radius : 6
                 } ] ],
-
+                Anchors : [ "Continuous", "Continuous" ],
                 // def for new connector (drag n' drop)
                 // - line 2px
                 PaintStyle : {
