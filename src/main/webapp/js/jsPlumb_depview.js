@@ -116,18 +116,16 @@
 	                        connection.bind("click", function(conn) {
 	                            var sourceJobName = conn.source.attr('data-jobname');
 	                            var targetJobName = conn.target.attr('data-jobname')
-	                            if(confirm('delete connection: '+ sourceJobName +" -> "+ targetJobName +'?')){
-	                                jQuery.ajax({
-	                                    url : encodeURI('edge/' + sourceJobName + '/'    + targetJobName),
-	                                    type : 'DELETE',
-	                                    success : function(response) {
-	                                        jsPlumb.detach(conn);
-	                                    },
-	                                    error: function (request, status, error) {
-	                                        alert(status+": "+error);
-	                                    }
-	                                });
-	                            }
+                                jQuery.ajax({
+                                    url : encodeURI('edge/' + sourceJobName + '/'    + targetJobName),
+                                    type : 'DELETE',
+                                    success : function(response) {
+                                        jsPlumb.detach(conn);
+                                    },
+                                    error: function (request, status, error) {
+                                        alert(status+": "+error);
+                                    }
+                                });
 	                        });
                         }
                     }
@@ -149,18 +147,16 @@
 	                    info.connection.bind("click", function(conn) {
 	                        var sourceJobName = conn.source.attr('data-jobname');
 	                        var targetJobName = conn.target.attr('data-jobname');
-	                        if(confirm('delete connection: '+ sourceJobName +" -> "+ targetJobName +'?')){
-	                            jQuery.ajax({
-	                                url : encodeURI('edge/' + sourceJobName + '/'    + targetJobName),
-	                                type : 'DELETE',
-	                                success : function(response) {
-	                                    jsPlumb.detach(conn);
-	                                },
-	                                error: function (request, status, error) {
-	                                    alert(request.responseText);
-	                                }
-	                            });
-	                        }
+                            jQuery.ajax({
+                                url : encodeURI('edge/' + sourceJobName + '/'    + targetJobName),
+                                type : 'DELETE',
+                                success : function(response) {
+                                    jsPlumb.detach(conn);
+                                },
+                                error: function (request, status, error) {
+                                    alert(request.responseText);
+                                }
+                            });
 	                    });
 	                });
                 }
