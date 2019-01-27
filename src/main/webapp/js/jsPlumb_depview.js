@@ -83,14 +83,11 @@
                     var p = jQuery(current).parent()
                     if(window.depview.editEnabled) {
 	                    jsPlumb.makeSource(current, {
-	                        anchor : "Continuous",
 	                        parent: p
 	                    });
                     }
                 })
-                jsPlumb.makeTarget(jsPlumb.getSelector('.window'), {
-                    anchor : "Continuous"
-                });
+                jsPlumb.makeTarget(jsPlumb.getSelector('.window'));
 
                 var edges = data["edges"];
                 jQuery.each(edges, function(i, edge) {
