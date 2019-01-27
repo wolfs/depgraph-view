@@ -42,7 +42,6 @@
                     lineWidth : 2,
                     strokeStyle : window.depview.colordep,
                     joinstyle:"round"},
-
                 // the overlays to decorate each connection with. note that the
                 // label overlay uses a function to generate the label text; in
                 // this case it returns the 'labelText' member that we set on each
@@ -50,9 +49,8 @@
                 ConnectionOverlays : [ [ "Arrow", {
                     location : 1.0,
                     foldback:0.5
-                } ]
-                ]
-
+                } ] ],
+                ConnectionsDetachable:false
             });
             jQuery.getJSON('graph.json', function(data) {
 
