@@ -22,11 +22,13 @@
 
 package hudson.plugins.depgraph_view.model.operations;
 
+import java.io.IOException;
+
+import org.acegisecurity.AccessDeniedException;
+
 import hudson.model.AbstractProject;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
-
-import java.io.IOException;
 
 public abstract class EdgeOperation {
     protected final AbstractProject<?, ?> source;
@@ -35,8 +37,11 @@ public abstract class EdgeOperation {
     public EdgeOperation(String sourceJobName, String targetJobName) {
         source = Jenkins.get().getItemByFullName(sourceJobName.trim(), AbstractProject.class);
         target = Jenkins.get().getItemByFullName(targetJobName, AbstractProject.class);
-        if (source != null) { source.checkPermission(Permission.CONFIGURE); }
-        if (target != null) { target.checkPermission(Permission.CONFIGURE); }
+        if (source == null) { throw new UnsupportedOperationException("editing not supported for upstream job type."); }
+        if (target == null) { throw new UnsupportedOperationException("editing not supported for downstream job type."); }
+        if (!source.hasPermission(Permission.CONFIGURE)) {
+        	throw new AccessDeniedException("no permission to configure upstream job.");
+        }
     }
     
     /**

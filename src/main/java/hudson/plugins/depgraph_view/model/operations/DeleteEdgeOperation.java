@@ -44,7 +44,6 @@ public class DeleteEdgeOperation extends EdgeOperation {
                 source.getPublishersList().remove(buildTrigger);
                 source.getPublishersList().add(new BuildTrigger(childProjectsValue, threshold));
                 source.save();
-                target.save();
                 Jenkins.get().rebuildDependencyGraph();
             }
         }

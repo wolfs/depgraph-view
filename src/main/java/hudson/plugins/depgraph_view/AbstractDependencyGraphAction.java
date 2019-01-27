@@ -80,16 +80,16 @@ public abstract class AbstractDependencyGraphAction implements Action {
         String path = req.getRestOfPath();
         Matcher m = EDGE_PATTERN.matcher(path);
         if (m.find( )) {
-          try {
-            final String sourceJobName = m.group(1);
-              final String targetJobName = m.group(2);
-              if ("PUT".equalsIgnoreCase(req.getMethod())) {
-                 new PutEdgeOperation(sourceJobName, targetJobName).perform();
-              } else if ("DELETE".equalsIgnoreCase(req.getMethod())) {
-                 new DeleteEdgeOperation(sourceJobName, targetJobName).perform();
-              }
+            try {
+                final String sourceJobName = m.group(1);
+                final String targetJobName = m.group(2);
+                if ("PUT".equalsIgnoreCase(req.getMethod())) {
+                     new PutEdgeOperation(sourceJobName, targetJobName).perform();
+                } else if ("DELETE".equalsIgnoreCase(req.getMethod())) {
+                     new DeleteEdgeOperation(sourceJobName, targetJobName).perform();
+                }
             } catch (Exception e) {
-                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
             }
         } else {
             rsp.sendError(HttpServletResponse.SC_NOT_FOUND);

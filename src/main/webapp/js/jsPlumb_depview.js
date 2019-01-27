@@ -137,7 +137,8 @@
 //                                 alert('Load was performed.');
 	                           },
 	                           error: function (request, status, error) {
-	                                alert(request.responseText);
+	                                alert(status+": "+error);
+	                                jsPlumb.detach(info);
 	                           }
 	                    });
 	                    // allow deletion of newly created connection
@@ -151,7 +152,7 @@
                                     jsPlumb.detach(conn);
                                 },
                                 error: function (request, status, error) {
-                                    alert(request.responseText);
+                                    alert(status+": "+error);
                                 }
                             });
 	                    });
