@@ -40,15 +40,20 @@ import jenkins.model.Jenkins;
 public class ParameterizedTriggerEdgeProvider implements EdgeProvider {
 
 	private final Jenkins jenkins;
+	private final boolean isPluginInstalled;
 
 	@Inject
 	public ParameterizedTriggerEdgeProvider(Jenkins jenkins) {
 		this.jenkins = jenkins;
+		isPluginInstalled = jenkins.getPlugin("parameterized-trigger") != null;
 	}
 
 	@Override
 	public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
 
+		if (!isPluginInstalled) {
+			return new ArrayList<>();
+		}
 		List<Edge> edges = getUpstreamEdges(project);
 		edges.addAll(getDownstreamEdges(project));
 

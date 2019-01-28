@@ -41,15 +41,20 @@ import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 public class FanInReverseBuildTriggerEdgeProvider implements EdgeProvider {
 
 	private final Jenkins jenkins;
+	private final boolean isPluginInstalled;
 
 	@Inject
 	public FanInReverseBuildTriggerEdgeProvider(Jenkins jenkins) {
 		this.jenkins = jenkins;
+		isPluginInstalled = jenkins.getPlugin("job-fan-in") != null;
 	}
 
 	@Override
 	public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
 
+		if (!isPluginInstalled) {
+			return new ArrayList<>();
+		}
 		List<Edge> edges = getUpstreamEdges(project);
 		edges.addAll(getDownstreamEdges(project));
 
