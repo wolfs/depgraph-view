@@ -18,11 +18,6 @@
         init : function() {
             jsPlumb.importDefaults({
                 Connector : ["StateMachine", { curviness: 10 }],// Straight, Flowchart, Straight, Bezier
-                // default drag options
-                DragOptions : {
-                    cursor : 'pointer',
-                    zIndex : 2000
-                },
                 // default to blue at one end and green at the other
                 EndpointStyles : [ {
                     fillStyle : '#225588'
@@ -31,9 +26,9 @@
                 } ],
                 // blue endpoints 7px; green endpoints 7px.
                 Endpoints : [ [ "Dot", {
-                    radius : 6
+                    radius : 5
                 } ], [ "Dot", {
-                    radius : 6
+                    radius : 5
                 } ] ],
                 Anchors : [ "Continuous", "Continuous" ],
                 // def for new connector (drag n' drop)
