@@ -83,11 +83,12 @@
                     var p = jQuery(current).parent()
                     if(window.depview.editEnabled) {
 	                    jsPlumb.makeSource(current, {
-	                        parent: p
+	                        parent: p,
+	                        scope: "dep"
 	                    });
                     }
                 })
-                jsPlumb.makeTarget(jsPlumb.getSelector('.window'));
+                jsPlumb.makeTarget(jsPlumb.getSelector('.window'), {scope: "dep"});
 
                 var edges = data["edges"];
                 jQuery.each(edges, function(i, edge) {
@@ -130,6 +131,11 @@
 
                 if(window.depview.editEnabled) {
 	                jsPlumb.bind("jsPlumbConnection", function(info) {
+	                    var connections = jsPlumb.getConnections({ scope: "dep", source: info.sourceId, target: info.targetId });
+	                    if ((info.sourceId == info.targetId) || connections.length > 1) {
+	                        jsPlumb.detach(info);
+	                        return;
+	                    }
 	                    jQuery.ajax({
 	                           url: encodeURI('edge/'+info.source.attr('data-jobname') +'/'+info.target.attr('data-jobname')),
 	                           type: 'PUT',
