@@ -56,7 +56,7 @@
 
                 var top = 3;
                 var space = 150;
-                var xOverall = 0;
+                var xOverall = 150;
 
                 var clusters = data["clusters"];
                 // iterate clusters
@@ -67,16 +67,16 @@
                             nodeString = nodeString + '<div class="ep"/>';
                         }
                         nodeString = nodeString + '<a href="' + node.url + '">' + node.name + '</a></div>'
-                        jQuery(nodeString).
-                            addClass('window').
+                        var jnode = jQuery(nodeString);
+                        var width = jnode.addClass('window').
                             attr('id', escapeId(node.name)).
                             attr('data-jobname', node.fullName).
                             css('top', node.y + top).
-                            css('left', node.x + xOverall).
-                            appendTo(window.depview.paper);
+                            css('left', node.x).
+                            appendTo(window.depview.paper).width();
+                        jnode.css('left', node.x - width/2 + xOverall);
                     })
                     top = top + cluster.vSize + space
-                    // xOverall = xOverall + cluster.hSize + space
                 });
                 // definitions for drag/drop connections
                 jQuery(".ep").each(function(idx, current) {
