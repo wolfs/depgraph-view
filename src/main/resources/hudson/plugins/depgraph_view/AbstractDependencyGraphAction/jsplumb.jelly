@@ -27,9 +27,19 @@
   <j:new var="h2" className="hudson.Functions" /><!-- instead of JSP functions -->
   <link rel="stylesheet" href="${h2.inferHudsonURL(context.currentRequest)}/plugin/depgraph-view/css/depview.css"></link>
 	<l:layout title="${it.title}">
-		<st:include page="sidepanel.jelly" />
+
+	  	<!-- Try to use side panel from parent object, if present. -->
+		<j:choose>
+			<j:when test="${it.parentObject != null}">
+			    <st:include it="${it.parentObject}" page="sidepanel.jelly" optional="true" />
+			</j:when>
+    		<j:otherwise>
+			    <st:include page="sidepanel.jelly" optional="true" />
+    		</j:otherwise>
+		</j:choose>
+
 		<l:main-panel>
-			<h1>${%Dependency Graph}</h1>
+			<h1>${it.title}</h1>
 
 			<l:tabBar>
 	            <j:if test="${it.isGraphvizEnabled()}">

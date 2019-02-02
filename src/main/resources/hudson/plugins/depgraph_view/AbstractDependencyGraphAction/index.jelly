@@ -38,7 +38,7 @@
 		</j:choose>
 	    
 	    <l:main-panel>
-	      <h1>${%Dependency Graph}</h1>
+	      <h1>${it.title}</h1>
 	      <l:tabBar>
 	            <l:tab name="graphviz" active="${true}" href="." />
 	            <l:tab name="jsplumb" active="${false}"  href="./jsplumb" />

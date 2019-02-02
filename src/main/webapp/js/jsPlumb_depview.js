@@ -51,7 +51,7 @@
 
                 var top = 3;
                 var space = 150;
-                var xOverall = 150;
+                var xOverall = 90;
 
                 var clusters = data["clusters"];
                 // iterate clusters
