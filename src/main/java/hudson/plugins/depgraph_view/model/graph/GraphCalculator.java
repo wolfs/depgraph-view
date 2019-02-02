@@ -53,23 +53,25 @@ public class GraphCalculator {
     public DependencyGraph generateGraph(Iterable<ProjectNode> initialProjects) {
         DependencyGraph graph = new DependencyGraph();
         graph.addNodes(initialProjects);
-        extendGraph(graph, initialProjects);
+        extendGraph(graph, initialProjects, e -> e::getUpstreamEdgesIncidentWith);
+        extendGraph(graph, initialProjects, e -> e::getDownstreamEdgesIncidentWith);
         return graph;
     }
-
-    private void extendGraph(DependencyGraph graph, Iterable<ProjectNode> fromProjects) {
+    
+    private void extendGraph(DependencyGraph graph, Iterable<ProjectNode> fromProjects, 
+    		java.util.function.Function<EdgeProvider, java.util.function.Function<Job<?, ?>, Iterable<Edge>>> x) {
         List<Edge> newEdges = Lists.newArrayList();
         for (ProjectNode projectNode : fromProjects) {
             Job<?,?> project = projectNode.getProject();
             if (project.hasPermission(Item.READ)) {
                 for (EdgeProvider edgeProvider : edgeProviders) {
-                    Iterables.addAll(newEdges, edgeProvider.getEdgesIncidentWith(project));
+                    Iterables.addAll(newEdges, x.apply(edgeProvider).apply(project));
                 }
             }
         }
         Set<ProjectNode> newProj = graph.addEdgesWithNodes(newEdges);
         if (!newProj.isEmpty()) {
-            extendGraph(graph, newProj);
+            extendGraph(graph, newProj, x);
         }
     }
 

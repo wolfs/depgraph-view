@@ -44,18 +44,28 @@ public class DependencyGraphEdgeProvider implements EdgeProvider {
     }
 
     @Override
-    public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
+    public Iterable<Edge> getUpstreamEdgesIncidentWith(Job<?, ?> project) {
+        List<DependencyGraph.Dependency> dependencies = new ArrayList<DependencyGraph.Dependency>();
+        if (project instanceof AbstractProject<?, ?>) {
+            dependencies.addAll(dependencyGraph.getUpstreamDependencies((AbstractProject<?, ?>)project));
+        }
+        return getEdges(dependencies);
+    }
+
+    @Override
+    public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?, ?> project) {
         List<DependencyGraph.Dependency> dependencies = new ArrayList<DependencyGraph.Dependency>();
         if (project instanceof AbstractProject<?, ?>) {
             dependencies.addAll(dependencyGraph.getDownstreamDependencies((AbstractProject<?, ?>)project));
-            dependencies.addAll(dependencyGraph.getUpstreamDependencies((AbstractProject<?, ?>)project));
         }
+        return getEdges(dependencies);
+    }
 
+    private List<Edge> getEdges(List<DependencyGraph.Dependency> dependencies) {
         List<Edge> edges = new ArrayList<Edge>();
         for (DependencyGraph.Dependency dependency : dependencies) {
             edges.add(new DependencyEdge(dependency.getUpstreamProject(), dependency.getDownstreamProject()));
         }
-
         return edges;
     }
 

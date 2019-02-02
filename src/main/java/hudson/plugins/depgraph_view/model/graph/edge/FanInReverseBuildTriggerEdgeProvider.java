@@ -50,19 +50,11 @@ public class FanInReverseBuildTriggerEdgeProvider implements EdgeProvider {
 	}
 
 	@Override
-	public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
-
-		if (!isPluginInstalled) {
-			return new ArrayList<>();
-		}
-		List<Edge> edges = getUpstreamEdges(project);
-		edges.addAll(getDownstreamEdges(project));
-
-		return edges;
-	}
-
-	private List<Edge> getUpstreamEdges(Job<?, ?> project) {
+	public Iterable<Edge> getUpstreamEdgesIncidentWith(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
+		if (!isPluginInstalled) {
+			return edges;
+		}
 		if (project instanceof ParameterizedJob<?, ?>) {
 			for (Trigger<?> trigger : ((ParameterizedJob<?, ?>) project).getTriggers().values()) {
 				if (trigger instanceof FanInReverseBuildTrigger) {
@@ -76,8 +68,12 @@ public class FanInReverseBuildTriggerEdgeProvider implements EdgeProvider {
 		return edges;
 	}
 
-	private List<Edge> getDownstreamEdges(Job<?, ?> project) {
+	@Override
+	public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
+		if (!isPluginInstalled) {
+			return edges;
+		}
 		for (ParameterizedJob<?, ?> downstream : jenkins.allItems(ParameterizedJob.class)) {
 			for (Trigger<?> trigger : downstream.getTriggers().values()) {
 				if (downstream instanceof Job<?, ?> && trigger instanceof FanInReverseBuildTrigger

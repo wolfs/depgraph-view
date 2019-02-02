@@ -48,7 +48,12 @@ public class CopyArtifactEdgeProvider implements EdgeProvider {
     }
 
     @Override
-    public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
+    public Iterable<Edge> getUpstreamEdgesIncidentWith(Job<?, ?> project) {
+    	return Sets.newHashSet();
+    }
+
+    @Override
+    public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?, ?> project) {
         Set<Edge> artifactEdges = Sets.newHashSet();
 
         if (copyartifactIsInstalled) {

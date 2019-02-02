@@ -49,19 +49,11 @@ public class ParameterizedTriggerEdgeProvider implements EdgeProvider {
 	}
 
 	@Override
-	public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
-
-		if (!isPluginInstalled) {
-			return new ArrayList<>();
-		}
-		List<Edge> edges = getUpstreamEdges(project);
-		edges.addAll(getDownstreamEdges(project));
-
-		return edges;
-	}
-
-	private List<Edge> getUpstreamEdges(Job<?, ?> project) {
+	public Iterable<Edge> getUpstreamEdgesIncidentWith(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
+		if (!isPluginInstalled) {
+			return edges;
+		}
 		for (AbstractProject<?, ?> upstream : jenkins.allItems(AbstractProject.class)) {
 			BuildTrigger buildTrigger = upstream.getPublishersList().get(BuildTrigger.class);
 			if (buildTrigger != null) {
@@ -75,8 +67,12 @@ public class ParameterizedTriggerEdgeProvider implements EdgeProvider {
 		return edges;
 	}
 
-	private List<Edge> getDownstreamEdges(Job<?, ?> project) {
+	@Override
+	public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
+		if (!isPluginInstalled) {
+			return edges;
+		}
 		if (project instanceof AbstractProject<?, ?>) {
 			BuildTrigger buildTrigger = ((AbstractProject<?, ?>) project).getPublishersList().get(BuildTrigger.class);
 			if (buildTrigger != null) {

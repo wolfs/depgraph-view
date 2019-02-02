@@ -47,15 +47,7 @@ public class ReverseBuildTriggerEdgeProvider implements EdgeProvider {
 	}
 
 	@Override
-	public Iterable<Edge> getEdgesIncidentWith(Job<?, ?> project) {
-
-		List<Edge> edges = getUpstreamEdges(project);
-		edges.addAll(getDownstreamEdges(project));
-
-		return edges;
-	}
-
-	private List<Edge> getUpstreamEdges(Job<?, ?> project) {
+	public Iterable<Edge> getUpstreamEdgesIncidentWith(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
 		if (project instanceof ParameterizedJob<?, ?>) {
 			for (Trigger<?> trigger : ((ParameterizedJob<?, ?>) project).getTriggers().values()) {
@@ -70,7 +62,8 @@ public class ReverseBuildTriggerEdgeProvider implements EdgeProvider {
 		return edges;
 	}
 
-	private List<Edge> getDownstreamEdges(Job<?, ?> project) {
+	@Override
+	public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
 		for (ParameterizedJob<?, ?> downstream : jenkins.allItems(ParameterizedJob.class)) {
 			for (Trigger<?> trigger : downstream.getTriggers().values()) {

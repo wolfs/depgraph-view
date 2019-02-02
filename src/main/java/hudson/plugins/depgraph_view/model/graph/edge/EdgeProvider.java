@@ -35,5 +35,6 @@ import hudson.plugins.depgraph_view.model.graph.DependencyGraphModule;
  * and {@link DependencyGraphEdgeProvider}
  */
 public interface EdgeProvider extends ExtensionPoint {
-    public Iterable<Edge> getEdgesIncidentWith(Job<?,?> project);
+    public Iterable<Edge> getUpstreamEdgesIncidentWith(Job<?,?> project);
+    public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?,?> project);
 }
