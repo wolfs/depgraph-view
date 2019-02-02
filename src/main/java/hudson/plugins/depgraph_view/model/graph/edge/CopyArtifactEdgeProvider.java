@@ -22,63 +22,72 @@
 
 package hudson.plugins.depgraph_view.model.graph.edge;
 
+import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
+
+import java.util.Set;
+
+import javax.inject.Inject;
+
 import com.google.common.collect.Sets;
+
 import hudson.model.Job;
-import hudson.model.FreeStyleProject;
+import hudson.model.Project;
 import hudson.plugins.copyartifact.CopyArtifact;
 import hudson.tasks.Builder;
 import jenkins.model.Jenkins;
-
-import javax.inject.Inject;
-import java.util.List;
-import java.util.Set;
-
-import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
 
 /**
  * Provides {@link CopyArtifactEdge}s by inspecting the configuration of the {@link CopyArtifact} Plugin.
  */
 public class CopyArtifactEdgeProvider implements EdgeProvider {
 
-    private boolean copyartifactIsInstalled;
+	private final Jenkins jenkins;
+	private final boolean isPluginInstalled;
 
-    @Inject
-    public CopyArtifactEdgeProvider(Jenkins jenkins) {
-        copyartifactIsInstalled = jenkins.getPlugin("copyartifact") != null;
-    }
+	@Inject
+	public CopyArtifactEdgeProvider(Jenkins jenkins) {
+		this.jenkins = jenkins;
+		isPluginInstalled = jenkins.getPlugin("copyartifact") != null;
+	}
+
+	@Override
+	public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?, ?> project) {
+		Set<Edge> edges = Sets.newHashSet();
+		if (!isPluginInstalled) {
+			return edges;
+		}
+		for (Project<?, ?> downstream : jenkins.allItems(Project.class)) {
+			for (Builder builder : downstream.getBuilders()) {
+				if (builder instanceof CopyArtifact) {
+					Job<?,?> projectFromName = jenkins.getItem(((CopyArtifact) builder).getProjectName(),
+							downstream.getParent(), Job.class);
+					if (projectFromName == project) {
+						edges.add(new CopyArtifactEdge(node(project), node(downstream)));
+					}
+				}
+			}
+		}
+		return edges;
+	}
 
     @Override
     public Iterable<Edge> getUpstreamEdgesIncidentWith(Job<?, ?> project) {
-    	return Sets.newHashSet();
-    }
+        Set<Edge> edges = Sets.newHashSet();
+		if (!isPluginInstalled) {
+			return edges;
+		}
+		if (project instanceof Project<?, ?>) {
+			for (Builder builder : ((Project<?, ?>) project).getBuilders()) {
+				if (builder instanceof CopyArtifact) {
+                    Job<?,?> upstream = jenkins.getItem(((CopyArtifact) builder).getProjectName(),
+                    		project.getParent(), Job.class);
+					if (upstream != null) {
+						edges.add(new CopyArtifactEdge(node(upstream), node(project)));
+					}
+				}
+			}
+		}
+		return edges;
+	}
 
-    @Override
-    public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?, ?> project) {
-        Set<Edge> artifactEdges = Sets.newHashSet();
-
-        if (copyartifactIsInstalled) {
-            if(project instanceof FreeStyleProject) {
-
-                FreeStyleProject proj = (FreeStyleProject) project;
-                List<Builder> builders = proj.getBuilders();
-
-                for (Builder builder : builders) {
-
-                    if (builder instanceof CopyArtifact) {
-
-                        CopyArtifact caBuilder = (CopyArtifact) builder;
-                        String projectName = caBuilder.getProjectName();
-                        Jenkins jenkins = Jenkins.get();
-                        Job<?,?> projectFromName = jenkins.getItem(projectName, project.getParent(), Job.class);
-
-                        if (projectFromName != null) {
-                            artifactEdges.add(
-                                    new CopyArtifactEdge(node(projectFromName), node(project)));
-                        }
-                    }
-                }
-            }
-        }
-        return artifactEdges;
-    }
 }
