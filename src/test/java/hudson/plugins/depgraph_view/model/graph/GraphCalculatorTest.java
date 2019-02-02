@@ -61,6 +61,7 @@ public class GraphCalculatorTest {
     private void assertGraphContainsProjects(DependencyGraph graph, Job<?,?>... projects) {
         Collection<ProjectNode> projectNodes = Lists.newArrayList(GraphCalculator.jobSetToProjectNodeSet(Arrays.asList(projects)));
         assertTrue(graph.getNodes().containsAll(projectNodes));
+        assertTrue(graph.getNodes().size() == projectNodes.size());
     }
 
     private DependencyGraph generateGraph(Job<?,?> from) {
@@ -88,7 +89,12 @@ public class GraphCalculatorTest {
         addDependency(project2, project1);
         addDependency(project2, project3);
         j.getInstance().rebuildDependencyGraph();
+        
         DependencyGraph graph = generateGraph(project1);
+        assertGraphContainsProjects(graph, project1, project2);
+        assertHasOneDependencyEdge(graph, project2, project1);
+        
+        graph = generateGraph(project2);
         assertGraphContainsProjects(graph, project1, project2, project3);
         assertHasOneDependencyEdge(graph, project2, project1);
         assertHasOneDependencyEdge(graph, project2, project3);
