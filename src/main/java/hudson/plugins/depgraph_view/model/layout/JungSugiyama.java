@@ -55,7 +55,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 
 	private static final Orientation DEFAULT_ORIENTATION = Orientation.TOP;
 
-	private static final int DEFAULT_HORIZONTAL_SPACING = 250;
+	private static final int DEFAULT_HORIZONTAL_SPACING = 210;
 
 	private static final int DEFAULT_VERTICAL_SPACING = 120;
 

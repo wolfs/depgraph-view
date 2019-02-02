@@ -134,7 +134,7 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
     }
 
     private Map<String, Object> createStandaloneCluster() {
-        final double nodeXSize = 150;
+        final double nodeXSize = 180;
         final double nodeYSize = 90;
         final int nodesPerRow = 5;
         List<Map<String,Object>> nodeList = newArrayList();
