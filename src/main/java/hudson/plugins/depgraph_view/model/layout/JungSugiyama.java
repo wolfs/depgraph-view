@@ -55,9 +55,9 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 
 	private static final Orientation DEFAULT_ORIENTATION = Orientation.TOP;
 
-	private static final int DEFAULT_HORIZONTAL_SPACING = 200;
+	private static final int DEFAULT_HORIZONTAL_SPACING = 210;
 
-	private static final int DEFAULT_VERTICAL_SPACING = 100;
+	private static final int DEFAULT_VERTICAL_SPACING = 120;
 
 	public static enum Orientation
 	{
@@ -330,10 +330,11 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 		int movements = 0;
 
 		// restore the old sort
+		@SuppressWarnings("unchecked")
 		CellWrapper<?>[] levelSortBefore = currentLevel.toArray(new CellWrapper [] {});
 
 		// new sort
-		Collections.sort(currentLevel);
+		Collections.sort(currentLevel, (a, b) -> a.compareToOther(b));
 
 		// test for movements
 		for (int j = 0; j < levelSortBefore.length; j++)
@@ -561,7 +562,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 			// if he has the requested new grid position
 			// check the priority
 
-			CellWrapper neighborWrapper = (CellWrapper) currentLevel.get(neighborIndexInTheLevel);
+			CellWrapper<?> neighborWrapper = currentLevel.get(neighborIndexInTheLevel);
 
 			int neighborPriority = neighborWrapper.getPriority();
 
@@ -593,7 +594,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 	/** cell wrapper contains all values
 	* for one node
 	*/
-	class CellWrapper<VV> implements Comparable<CellWrapper<VV>>
+	class CellWrapper<VV>
 	{
 		/** sum value for edge Crosses
 		*/
@@ -697,10 +698,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 			return priority;
 		}
 
-		/**
-		* @see java.lang.Comparable#compareTo(Object)
-		*/
-		public int compareTo(CellWrapper<VV> compare)
+		public int compareToOther(CellWrapper<VV> compare)
 		{
 			if (compare.getEdgeCrossesIndicator() == this.getEdgeCrossesIndicator())
 				return 0;

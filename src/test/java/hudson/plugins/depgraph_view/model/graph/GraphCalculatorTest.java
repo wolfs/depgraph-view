@@ -24,7 +24,9 @@ package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
+import hudson.plugins.depgraph_view.model.graph.edge.DependencyGraphEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.EdgeProvider;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildTrigger;
 import org.junit.Rule;
@@ -56,12 +58,13 @@ public class GraphCalculatorTest {
         assertTrue(graph.findEdgeSet(node(project1), node(project2)).size() == 1);
     }
 
-    private void assertGraphContainsProjects(DependencyGraph graph, AbstractProject<?,?>... projects) {
-        Collection<ProjectNode> projectNodes = Lists.newArrayList(GraphCalculator.abstractProjectSetToProjectNodeSet(Arrays.asList(projects)));
+    private void assertGraphContainsProjects(DependencyGraph graph, Job<?,?>... projects) {
+        Collection<ProjectNode> projectNodes = Lists.newArrayList(GraphCalculator.jobSetToProjectNodeSet(Arrays.asList(projects)));
         assertTrue(graph.getNodes().containsAll(projectNodes));
+        assertTrue(graph.getNodes().size() == projectNodes.size());
     }
 
-    private DependencyGraph generateGraph(AbstractProject<?,?> from) {
+    private DependencyGraph generateGraph(Job<?,?> from) {
         return new GraphCalculator(getDependencyGraphEdgeProviders()).generateGraph(Collections.singleton(node(from)));
     }
 
@@ -75,7 +78,7 @@ public class GraphCalculatorTest {
         assertTrue(graph.findEdgeSet(node(project1), node(project2)).size() == 1);
     }
 
-    private void assertHasOneDependencyEdge(DependencyGraph graph, AbstractProject<?,?> from, AbstractProject<?,?> to) {
+    private void assertHasOneDependencyEdge(DependencyGraph graph, Job<?,?> from, Job<?,?> to) {
         assertTrue(graph.findEdgeSet(node(from), node(to)).size() == 1);
     }
 
@@ -86,7 +89,12 @@ public class GraphCalculatorTest {
         addDependency(project2, project1);
         addDependency(project2, project3);
         j.getInstance().rebuildDependencyGraph();
+        
         DependencyGraph graph = generateGraph(project1);
+        assertGraphContainsProjects(graph, project1, project2);
+        assertHasOneDependencyEdge(graph, project2, project1);
+        
+        graph = generateGraph(project2);
         assertGraphContainsProjects(graph, project1, project2, project3);
         assertHasOneDependencyEdge(graph, project2, project1);
         assertHasOneDependencyEdge(graph, project2, project3);
@@ -101,7 +109,7 @@ public class GraphCalculatorTest {
         return ImmutableSet.<EdgeProvider>of(new DependencyGraphEdgeProvider(j.getInstance()));
     }
 
-    private void addDependency(AbstractProject<?,?> project1, AbstractProject<?,?> project2) throws IOException {
+    private void addDependency(FreeStyleProject project1, FreeStyleProject project2) throws IOException {
         project1.getPublishersList().add(new BuildTrigger(project2.getName(), false));
     }
 }

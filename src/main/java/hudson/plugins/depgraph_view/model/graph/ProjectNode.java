@@ -25,19 +25,19 @@ package hudson.plugins.depgraph_view.model.graph;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.google.common.base.Preconditions;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 
 /**
  * A Node in the DependencyGraph, which corresponds to a Project
  */
 public class ProjectNode {
-    private final AbstractProject<?,?> project;
+    private final Job<?,?> project;
 
-    public static ProjectNode node(AbstractProject<?, ?> project) {
+    public static ProjectNode node(Job<?, ?> project) {
         return new ProjectNode(project);
     }
 
-    public ProjectNode(AbstractProject<?, ?> project) {
+    public ProjectNode(Job<?, ?> project) {
         Preconditions.checkNotNull(project);
         this.project = project;
     }
@@ -46,7 +46,7 @@ public class ProjectNode {
         return StringEscapeUtils.escapeHtml(project.getFullDisplayName());
     }
 
-    public AbstractProject<?, ?> getProject() {
+    public Job<?, ?> getProject() {
         return project;
     }
 
