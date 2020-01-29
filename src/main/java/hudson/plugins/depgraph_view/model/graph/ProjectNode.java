@@ -22,6 +22,8 @@
 
 package hudson.plugins.depgraph_view.model.graph;
 
+import org.apache.commons.lang.StringEscapeUtils;
+
 import com.google.common.base.Preconditions;
 import hudson.model.AbstractProject;
 
@@ -41,7 +43,7 @@ public class ProjectNode {
     }
 
     public String getName() {
-        return project.getFullDisplayName();
+        return StringEscapeUtils.escapeHtml(project.getFullDisplayName());
     }
 
     public AbstractProject<?, ?> getProject() {
