@@ -45,11 +45,15 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-  <url>http://wiki.jenkins-ci.org/display/JENKINS/Dependency+Graph+View+Plugin</url>
+  <url>https://github.com/jenkinsci/depgraph-view-plugin</url>
   <developers>
     <developer>
       <id>wolfs</id>
       <name>Stefan Wolf</name>
+    </developer>
+    <developer>
+      <id>ggrazioli</id>
+      <name>Guido Grazioli</name>
     </developer>
   </developers>
     <!-- Until we use the new plugin pom (https://github.com/jenkinsci/maven-hpi-plugin/blob/49fc9860c9cccc8b23a3690c5110b84aeefed12a/hpi-archetype/pom.xml#L6...L29)
