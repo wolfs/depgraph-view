@@ -69,13 +69,6 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>jquery</artifactId>
             <version>1.7.2-1</version>
-            <exclusions>
-                <!-- This version of the jQuery plugin pulls in a snapshot version of stapler -->
-                <exclusion>
-                    <artifactId>stapler</artifactId>
-                    <groupId>org.kohsuke.stapler</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
@@ -106,7 +99,7 @@
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-multibindings</artifactId>
-            <version>3.1.0</version>
+            <version>3.0</version>
         </dependency>
     </dependencies>
     <build>
