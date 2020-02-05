@@ -331,7 +331,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 		int movements = 0;
 
 		// restore the old sort
-		CellWrapper<?>[] levelSortBefore = currentLevel.toArray(new CellWrapper [] {});
+		CellWrapper[] levelSortBefore = currentLevel.toArray(new CellWrapper[] {});
 
 		// new sort
 		Collections.sort(currentLevel);
@@ -562,7 +562,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 			// if he has the requested new grid position
 			// check the priority
 
-			CellWrapper neighborWrapper = (CellWrapper) currentLevel.get(neighborIndexInTheLevel);
+			CellWrapper<?> neighborWrapper = currentLevel.get(neighborIndexInTheLevel);
 
 			int neighborPriority = neighborWrapper.getPriority();
 
@@ -715,8 +715,8 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			CellWrapper<?> that = (CellWrapper<?>) o;
+			if (!(o instanceof CellWrapper)) return false;
+			CellWrapper that = (CellWrapper) o;
 			return Double.compare(that.edgeCrossesIndicator, edgeCrossesIndicator) == 0;
 		}
 

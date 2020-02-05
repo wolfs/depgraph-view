@@ -35,8 +35,12 @@ public abstract class EdgeOperation {
     public EdgeOperation(String sourceJobName, String targetJobName) {
         this.source = Jenkins.getActiveInstance().getItemByFullName(sourceJobName.trim(), AbstractProject.class);
         this.target = Jenkins.getActiveInstance().getItemByFullName(targetJobName, AbstractProject.class);
-        source.checkPermission(Permission.CONFIGURE);
-        target.checkPermission(Permission.CONFIGURE);
+        if (source != null) {
+            source.checkPermission(Permission.CONFIGURE);
+        }
+        if (target != null) {
+            target.checkPermission(Permission.CONFIGURE);
+        }
     }
     
     /**
