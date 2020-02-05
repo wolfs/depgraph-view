@@ -23,6 +23,7 @@
 package hudson.plugins.depgraph_view.model.operations;
 
 import hudson.model.AbstractProject;
+import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
@@ -34,6 +35,8 @@ public abstract class EdgeOperation {
     public EdgeOperation(String sourceJobName, String targetJobName) {
         this.source = Jenkins.getActiveInstance().getItemByFullName(sourceJobName.trim(), AbstractProject.class);
         this.target = Jenkins.getActiveInstance().getItemByFullName(targetJobName, AbstractProject.class);
+        source.checkPermission(Permission.CONFIGURE);
+        target.checkPermission(Permission.CONFIGURE);
     }
     
     /**
