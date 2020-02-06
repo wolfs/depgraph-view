@@ -27,7 +27,9 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
+import hudson.plugins.depgraph_view.model.graph.edge.Edge;
+import hudson.plugins.depgraph_view.model.graph.edge.EdgeProvider;
 import hudson.model.Item;
 
 import javax.annotation.Nonnull;
@@ -52,31 +54,33 @@ public class GraphCalculator {
     public DependencyGraph generateGraph(Iterable<ProjectNode> initialProjects) {
         DependencyGraph graph = new DependencyGraph();
         graph.addNodes(initialProjects);
-        extendGraph(graph, initialProjects);
+        extendGraph(graph, initialProjects, e -> e::getUpstreamEdgesIncidentWith);
+        extendGraph(graph, initialProjects, e -> e::getDownstreamEdgesIncidentWith);
         return graph;
     }
-
-    private void extendGraph(DependencyGraph graph, Iterable<ProjectNode> fromProjects) {
+    
+    private void extendGraph(DependencyGraph graph, Iterable<ProjectNode> fromProjects, 
+            java.util.function.Function<EdgeProvider, java.util.function.Function<Job<?, ?>, Iterable<Edge>>> x) {
         List<Edge> newEdges = Lists.newArrayList();
         for (ProjectNode projectNode : fromProjects) {
-            AbstractProject<?,?> project = projectNode.getProject();
+            Job<?,?> project = projectNode.getProject();
             if (project.hasPermission(Item.READ)) {
                 for (EdgeProvider edgeProvider : edgeProviders) {
-                    Iterables.addAll(newEdges, edgeProvider.getEdgesIncidentWith(project));
+                    Iterables.addAll(newEdges, x.apply(edgeProvider).apply(project));
                 }
             }
         }
         Set<ProjectNode> newProj = graph.addEdgesWithNodes(newEdges);
         if (!newProj.isEmpty()) {
-            extendGraph(graph, newProj);
+            extendGraph(graph, newProj, x);
         }
     }
 
-    public static Iterable<ProjectNode> abstractProjectSetToProjectNodeSet(Iterable<? extends AbstractProject<?,?>> projects) {
-        return Iterables.transform(projects, new Function<AbstractProject<?, ?>, ProjectNode>() {
+    public static Iterable<ProjectNode> jobSetToProjectNodeSet(Iterable<? extends Job<?,?>> projects) {
+        return Iterables.transform(projects, new Function<Job<?, ?>, ProjectNode>() {
             @Override
-            public ProjectNode apply(@Nonnull AbstractProject<?, ?> input) {
-                return node(input);
+            public ProjectNode apply(Job<?, ?> input) {
+                return input != null ? node(input) : null;
             }
         });
     }

@@ -41,10 +41,12 @@ public class DeleteEdgeOperation extends EdgeOperation {
                 final String childProjectsValue = normalizeChildProjectValue(buildTrigger.getChildProjectsValue().replace(target.getName(), ""));
                 final Result threshold = buildTrigger.getThreshold();
                 source.getPublishersList().remove(buildTrigger);
-                source.getPublishersList().add(new BuildTrigger(childProjectsValue, threshold));
+                if (!childProjectsValue.isEmpty()) {
+                    source.getPublishersList().add(new BuildTrigger(childProjectsValue, threshold));
+                }
                 source.save();
                 target.save();
-                Jenkins.getActiveInstance().rebuildDependencyGraph();
+                Jenkins.get().rebuildDependencyGraph();
             }
         }
     }

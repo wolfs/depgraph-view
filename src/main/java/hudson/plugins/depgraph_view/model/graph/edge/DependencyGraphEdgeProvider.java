@@ -20,10 +20,11 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.depgraph_view.model.graph;
+package hudson.plugins.depgraph_view.model.graph.edge;
 
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
+import hudson.model.Job;
 import jenkins.model.Jenkins;
 
 import javax.inject.Inject;
@@ -43,16 +44,28 @@ public class DependencyGraphEdgeProvider implements EdgeProvider {
     }
 
     @Override
-    public Iterable<Edge> getEdgesIncidentWith(AbstractProject<?, ?> project) {
+    public Iterable<Edge> getUpstreamEdgesIncidentWith(Job<?, ?> project) {
         List<DependencyGraph.Dependency> dependencies = new ArrayList<DependencyGraph.Dependency>();
-        dependencies.addAll(dependencyGraph.getDownstreamDependencies(project));
-        dependencies.addAll(dependencyGraph.getUpstreamDependencies(project));
+        if (project instanceof AbstractProject<?, ?>) {
+            dependencies.addAll(dependencyGraph.getUpstreamDependencies((AbstractProject<?, ?>)project));
+        }
+        return getEdges(dependencies);
+    }
 
+    @Override
+    public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?, ?> project) {
+        List<DependencyGraph.Dependency> dependencies = new ArrayList<DependencyGraph.Dependency>();
+        if (project instanceof AbstractProject<?, ?>) {
+            dependencies.addAll(dependencyGraph.getDownstreamDependencies((AbstractProject<?, ?>)project));
+        }
+        return getEdges(dependencies);
+    }
+
+    private List<Edge> getEdges(List<DependencyGraph.Dependency> dependencies) {
         List<Edge> edges = new ArrayList<Edge>();
         for (DependencyGraph.Dependency dependency : dependencies) {
-            edges.add(new DependencyEdge(dependency));
+            edges.add(new DependencyEdge(dependency.getUpstreamProject(), dependency.getDownstreamProject()));
         }
-
         return edges;
     }
 

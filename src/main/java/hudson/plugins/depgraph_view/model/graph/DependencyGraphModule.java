@@ -25,6 +25,14 @@ package hudson.plugins.depgraph_view.model.graph;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 import hudson.Extension;
+import hudson.plugins.depgraph_view.model.graph.edge.BuildTriggerEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.CopyArtifactEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.DependencyGraphEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.EdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.FanInReverseBuildTriggerEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.ParameterizedTriggerBuilderEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.ParameterizedTriggerEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.ReverseBuildTriggerEdgeProvider;
 
 /**
  * Guice Module for the DependencyGraph
@@ -35,6 +43,11 @@ public class DependencyGraphModule extends AbstractModule {
     protected void configure() {
         Multibinder<EdgeProvider> edgeProviderMultibinder = Multibinder.newSetBinder(binder(), EdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(DependencyGraphEdgeProvider.class);
+        edgeProviderMultibinder.addBinding().to(BuildTriggerEdgeProvider.class);
+        edgeProviderMultibinder.addBinding().to(ReverseBuildTriggerEdgeProvider.class);
+        edgeProviderMultibinder.addBinding().to(FanInReverseBuildTriggerEdgeProvider.class);
+        edgeProviderMultibinder.addBinding().to(ParameterizedTriggerEdgeProvider.class);
+        edgeProviderMultibinder.addBinding().to(ParameterizedTriggerBuilderEdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(CopyArtifactEdgeProvider.class);
         Multibinder<SubProjectProvider> subProjectProviderMultibinder = Multibinder.newSetBinder(binder(), SubProjectProvider.class);
         subProjectProviderMultibinder.addBinding().to(ParameterizedTriggerSubProjectProvider.class);

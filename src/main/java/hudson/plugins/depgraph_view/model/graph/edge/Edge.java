@@ -20,9 +20,11 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.depgraph_view.model.graph;
+package hudson.plugins.depgraph_view.model.graph.edge;
 
 import com.google.common.collect.ImmutableSet;
+
+import hudson.plugins.depgraph_view.model.graph.ProjectNode;
 
 /**
  * Representation of an edge in the DependencyGraph

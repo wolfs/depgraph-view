@@ -27,7 +27,7 @@ import com.google.inject.Injector;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Launcher;
 import hudson.model.AbstractModelObject;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.Action;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
 import hudson.plugins.depgraph_view.model.display.AbstractGraphStringGenerator;
@@ -64,7 +64,7 @@ import java.util.regex.Pattern;
  */
 @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "Everything will be non-null")
 public abstract class AbstractDependencyGraphAction implements Action {
-	
+
     private final Logger LOGGER = Logger.getLogger(Logger.class.getName());
 
     private static final Pattern EDGE_PATTERN = Pattern.compile("/(.*)/(.*[^/])(.*)");
@@ -80,16 +80,16 @@ public abstract class AbstractDependencyGraphAction implements Action {
         String path = req.getRestOfPath();
         Matcher m = EDGE_PATTERN.matcher(path);
         if (m.find( )) {
-          try {
-            final String sourceJobName = m.group(1);
-              final String targetJobName = m.group(2);
-              if ("PUT".equalsIgnoreCase(req.getMethod())) {
-                 new PutEdgeOperation(sourceJobName, targetJobName).perform();
-              } else if ("DELETE".equalsIgnoreCase(req.getMethod())) {
-                 new DeleteEdgeOperation(sourceJobName, targetJobName).perform();
-              }
+            try {
+                final String sourceJobName = m.group(1);
+                final String targetJobName = m.group(2);
+                if ("PUT".equalsIgnoreCase(req.getMethod())) {
+                     new PutEdgeOperation(sourceJobName, targetJobName).perform();
+                } else if ("DELETE".equalsIgnoreCase(req.getMethod())) {
+                     new DeleteEdgeOperation(sourceJobName, targetJobName).perform();
+                }
             } catch (Exception e) {
-                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                rsp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
             }
         } else {
             rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -113,9 +113,13 @@ public abstract class AbstractDependencyGraphAction implements Action {
         AbstractGraphStringGenerator stringGenerator;
         if (path.startsWith("/graph.")) {
             Injector injector = Jenkins.lookup(Injector.class);
+            if (injector == null) {
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
             GraphCalculator graphCalculator = injector.getInstance(GraphCalculator.class);
             DependencyGraph graph =
-                    graphCalculator.generateGraph(GraphCalculator.abstractProjectSetToProjectNodeSet(getProjectsForDepgraph()));
+                    graphCalculator.generateGraph(GraphCalculator.jobSetToProjectNodeSet(getProjectsForDepgraph()));
             ListMultimap<ProjectNode, ProjectNode> projects2Subprojects =
                     injector.getInstance(SubprojectCalculator.class).generate(graph);
             stringGenerator = generatorFactory.newGenerator(graph, projects2Subprojects);
@@ -142,9 +146,9 @@ public abstract class AbstractDependencyGraphAction implements Action {
      */
     protected void runDot(OutputStream output, InputStream input, String type)
             throws IOException {
-        DescriptorImpl descriptor = Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class);
+        DescriptorImpl descriptor = Jenkins.get().getDescriptorByType(DescriptorImpl.class);
         String dotPath = descriptor.getDotExeOrDefault();
-        Launcher launcher = Jenkins.getActiveInstance().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
+        Launcher launcher = Jenkins.get().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
         try {
             launcher.launch()
                     .cmds(dotPath,"-T" + type, "-Gcharset=UTF-8", "-q1")
@@ -162,17 +166,17 @@ public abstract class AbstractDependencyGraphAction implements Action {
     }
 
     public boolean isGraphvizEnabled() {
-        return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class).isGraphvizEnabled();
+        return Jenkins.get().getDescriptorByType(DescriptorImpl.class).isGraphvizEnabled();
     }
 
     public boolean isEditFunctionInJSViewEnabled() {
-        return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
+        return Jenkins.get().getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
     }
 
     /**
      * @return projects for which the dependency graph should be calculated
      */
-    protected abstract Collection<? extends AbstractProject<?, ?>> getProjectsForDepgraph();
+    protected abstract Collection<? extends Job<?, ?>> getProjectsForDepgraph();
 
     /**
      * @return title of the dependency graph page

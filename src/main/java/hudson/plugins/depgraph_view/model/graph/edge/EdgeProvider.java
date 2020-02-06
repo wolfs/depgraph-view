@@ -20,23 +20,21 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.depgraph_view.model.graph;
+package hudson.plugins.depgraph_view.model.graph.edge;
+
+import hudson.ExtensionPoint;
+import hudson.model.Job;
+import hudson.plugins.depgraph_view.model.graph.DependencyGraphModule;
 
 /**
- * Represents an {@link Edge} given by the {@link hudson.plugins.copyartifact.CopyArtifact} Builder.
+ * This is an extension point which makes it possible to add edges
+ * to the DependencyGraph which gets drawn. Note that in order to add your own
+ * EdgeProvider you must not annotate the corresponding subclass with {@link hudson.Extension}
+ * but instead add a {@link com.google.inject.Module} with a {@link com.google.inject.multibindings.Multibinder}
+ * which has the {@link hudson.Extension} annotation. For example see {@link DependencyGraphModule}
+ * and {@link DependencyGraphEdgeProvider}
  */
-public class CopyArtifactEdge extends Edge {
-    public CopyArtifactEdge(ProjectNode source, ProjectNode target) {
-        super(source, target);
-    }
-
-    @Override
-    public String getType() {
-        return "copy";
-    }
-
-    @Override
-    public String getColor() {
-        return "lightblue";
-    }
+public interface EdgeProvider extends ExtensionPoint {
+    public Iterable<Edge> getUpstreamEdgesIncidentWith(Job<?,?> project);
+    public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?,?> project);
 }

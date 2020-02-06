@@ -23,12 +23,20 @@
 package hudson.plugins.depgraph_view;
 
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.AbstractModelObject;
+import hudson.model.Action;
+import hudson.model.TopLevelItem;
+import hudson.model.TransientViewActionFactory;
+import hudson.model.View;
+import hudson.model.Job;
+
+import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Factory to a dependency graph view action to all views
@@ -48,12 +56,14 @@ public class DependencyGraphViewActionFactory extends TransientViewActionFactory
         }
 
         @Override
-        protected Collection<? extends AbstractProject<?, ?>> getProjectsForDepgraph() {
+        protected Collection<? extends Job<?, ?>> getProjectsForDepgraph() {
             Collection<TopLevelItem> items = view.getItems();
-            Collection<AbstractProject<?,?>> projects = new ArrayList<AbstractProject<?,?>>();
+            Collection<Job<?,?>> projects = new ArrayList<>();
             for (TopLevelItem item : items) {
-                if (item instanceof AbstractProject<?, ?>) {
-                    projects.add((AbstractProject<?, ?>) item);
+                if (item instanceof Job<?, ?>) {
+                    projects.add((Job<?, ?>) item);
+                } else if (item instanceof WorkflowMultiBranchProject) {
+                	projects.addAll(item.getAllJobs().stream().map(i -> (Job<?, ?>) i).collect(Collectors.toList()));
                 }
             }
             return projects;

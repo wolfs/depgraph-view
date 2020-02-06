@@ -21,6 +21,7 @@
   -->
 
 <?jelly escape-by-default='true'?>
+
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:sv="/lib/sectioned_view" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:choose>
     <j:when test="${it.isGraphvizEnabled()}">
@@ -37,7 +38,7 @@
 		</j:choose>
 	    
 	    <l:main-panel>
-	      <h1>${%Dependency Graph}</h1>
+	      <h1>${it.title}</h1>
 	      <l:tabBar>
 	            <l:tab name="graphviz" active="${true}" href="." />
 	            <l:tab name="jsplumb" active="${false}"  href="./jsplumb" />

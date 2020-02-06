@@ -26,6 +26,8 @@ import com.google.common.collect.Sets;
 import edu.uci.ics.jung.algorithms.filters.VertexPredicateFilter;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
+import hudson.plugins.depgraph_view.model.graph.edge.Edge;
+
 import org.apache.commons.collections15.Predicate;
 
 import java.util.Collection;

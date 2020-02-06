@@ -25,10 +25,10 @@ package hudson.plugins.depgraph_view.model.display;
 import com.google.common.base.Function;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
-import hudson.plugins.depgraph_view.model.graph.Edge;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
+import hudson.plugins.depgraph_view.model.graph.edge.Edge;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -58,17 +58,17 @@ public abstract class AbstractGraphStringGenerator {
     };
 
     // Compares projects by name
-    protected static final Comparator<AbstractProject<?, ?>> PROJECT_COMPARATOR = new Comparator<AbstractProject<?, ?>>() {
+    protected static final Comparator<Job<?, ?>> PROJECT_COMPARATOR = new Comparator<Job<?, ?>>() {
         @Override
-        public int compare(AbstractProject<?, ?> o1, AbstractProject<?, ?> o2) {
+        public int compare(Job<?, ?> o1, Job<?, ?> o2) {
             return o1.getFullDisplayName().compareTo(o2.getFullDisplayName());
         }
     };
 
     protected static final Function<ProjectNode, String> PROJECT_NAME_FUNCTION = new Function<ProjectNode, String>() {
         @Override
-        public String apply(@Nonnull ProjectNode from) {
-            return from.getName();
+        public String apply(ProjectNode from) {
+            return from != null ? from.getName() : "";
         }
     };
 
