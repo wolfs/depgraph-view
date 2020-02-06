@@ -20,31 +20,45 @@
   ~ THE SOFTWARE.
   -->
 
+<?jelly escape-by-default='true'?>
+
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:sv="/lib/sectioned_view" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt">
   <j:new var="h2" className="hudson.Functions" /><!-- instead of JSP functions -->
   <link rel="stylesheet" href="${h2.inferHudsonURL(context.currentRequest)}/plugin/depgraph-view/css/depview.css"></link>
 	<l:layout title="${it.title}">
-		<st:include page="sidepanel.jelly" />
+
+	  	<!-- Try to use side panel from parent object, if present. -->
+		<j:choose>
+			<j:when test="${it.parentObject != null}">
+			    <st:include it="${it.parentObject}" page="sidepanel.jelly" optional="true" />
+			</j:when>
+    		<j:otherwise>
+			    <st:include page="sidepanel.jelly" optional="true" />
+    		</j:otherwise>
+		</j:choose>
+
 		<l:main-panel>
-			<h1>${%Dependency Graph}</h1>
+			<h1>${it.title}</h1>
 
 			<l:tabBar>
 	            <j:if test="${it.isGraphvizEnabled()}">
-	                <l:tab name="graphviz" active="${false}" href="." />
+	            	<l:tab name="graphviz" active="${false}" href="." />
 	            </j:if>
 				<l:tab name="jsplumb" active="${true}" href="./jsplumb" />
 			</l:tabBar>
 
-      <p>
-        <a href="graph.json">${%Json format}</a>
-      </p>
+			<p>
+				<a href="graph.json">${%Json format}</a>
+			</p>
 
-      <div id="paper"></div> <!-- style="position:relative;margin-top:100px;" -->
+			<div id="paper"></div> <!-- style="position:relative;margin-top:100px;" -->
 
+			<script type='text/javascript' src='${rootURL}/plugin/depgraph-view/js/jquery-1.7.2.min.js'></script>
+			<script type='text/javascript' src='${rootURL}/plugin/depgraph-view/js/jquery-ui-1.8.9.custom.min.js'></script>
 			<script type='text/javascript' src='${rootURL}/plugin/depgraph-view/js/jquery.jsPlumb-1.4.1-all-min.js'></script>
 			<script type="text/javascript" src="${rootURL}/plugin/depgraph-view/js/jsPlumb_depview.js"></script>
-      <script type="text/javascript">window.depview.editEnabled=${it.isEditFunctionInJSViewEnabled()}</script>
+			<script type="text/javascript">window.depview.editEnabled=${it.isEditFunctionInJSViewEnabled()}</script>
 
 		</l:main-panel>
 	</l:layout>

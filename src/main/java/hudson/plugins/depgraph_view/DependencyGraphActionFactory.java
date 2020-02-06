@@ -24,9 +24,9 @@ package hudson.plugins.depgraph_view;
 
 import hudson.Extension;
 import hudson.model.AbstractModelObject;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.Action;
-import hudson.model.TransientProjectActionFactory;
+import jenkins.model.TransientActionFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -35,20 +35,20 @@ import java.util.Collections;
  * Factory to add a dependency graph view action to each project
  */
 @Extension
-public class DependencyGraphProjectActionFactory extends TransientProjectActionFactory {
+public class DependencyGraphActionFactory extends TransientActionFactory<Job> {
     /**
      * Shows the connected component of the project
      */
     public static class DependencyGraphProjectAction extends AbstractDependencyGraphAction {
-        final private AbstractProject<?, ?> project;
+        final private Job<?, ?> project;
 
-        public DependencyGraphProjectAction(AbstractProject<?, ?> project) {
+        public DependencyGraphProjectAction(Job<?, ?> project) {
             this.project = project;
         }
 
         @Override
-        protected Collection<AbstractProject<?, ?>> getProjectsForDepgraph() {
-            return Collections.<AbstractProject<?, ?>>singleton(project);
+        protected Collection<Job<?, ?>> getProjectsForDepgraph() {
+            return Collections.<Job<?, ?>>singleton(project);
         }
 
         @Override
@@ -58,12 +58,17 @@ public class DependencyGraphProjectActionFactory extends TransientProjectActionF
 
         @Override
         public AbstractModelObject getParentObject() {
-            return project;
+        	return project;
         }
+    }
+    
+    @Override
+    public Class<Job> type() {
+    	return Job.class;
     }
 
     @Override
-    public Collection<? extends Action> createFor(AbstractProject target) {
+    public Collection<? extends Action> createFor(Job target) {
         return Collections.singleton(new DependencyGraphProjectAction(target));
     }
 

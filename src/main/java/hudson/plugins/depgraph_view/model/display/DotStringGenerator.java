@@ -26,8 +26,8 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ListMultimap;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
-import hudson.plugins.depgraph_view.model.graph.Edge;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
+import hudson.plugins.depgraph_view.model.graph.edge.Edge;
 
 import java.util.List;
 
