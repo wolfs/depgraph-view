@@ -1,4 +1,4 @@
-tag-template: depgraph-view-plugin-$NEXT_PATCH_VERSION
+tag-template: depgraph-view-$NEXT_PATCH_VERSION
 name-template: Dependency Graph Viewer Plugin $NEXT_PATCH_VERSION 🎁
 
 template: |
