@@ -1,8 +1,14 @@
-### Changelog (0.1 - 0.14)
+### Changelog (0.1 - 0.15)
 
 All notable changes up to version 0.15 are documented in this file. All future changes will be automatically
 logged by release drafter in [GitHub releases](https://github.com/jenkinsci/depgraph-view-plugin/releases).  
 
+
+#### Version 0.15.0 (Feb 6, 2020)
+
+-   Switch to semantic versioning
+-   Add release-drafter release notes
+-   This will be the last revision dependending on 1.501
 
 #### Version 0.14 (Feb 5, 2020)
 
