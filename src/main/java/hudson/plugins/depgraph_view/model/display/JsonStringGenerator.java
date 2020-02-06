@@ -129,8 +129,7 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
         json.put("edges", edges);
         json.put("clusters", clusterList);
 
-        final String jsonStr = json.toString(2);
-        return jsonStr;
+        return json.toString(2);
     }
 
     private Map<String, Object> createStandaloneCluster() {

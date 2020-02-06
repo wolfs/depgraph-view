@@ -30,6 +30,7 @@ import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
 import hudson.plugins.depgraph_view.model.graph.edge.Edge;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

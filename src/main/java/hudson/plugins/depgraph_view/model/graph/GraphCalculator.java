@@ -32,6 +32,7 @@ import hudson.plugins.depgraph_view.model.graph.edge.Edge;
 import hudson.plugins.depgraph_view.model.graph.edge.EdgeProvider;
 import hudson.model.Item;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +60,7 @@ public class GraphCalculator {
     }
     
     private void extendGraph(DependencyGraph graph, Iterable<ProjectNode> fromProjects, 
-    		java.util.function.Function<EdgeProvider, java.util.function.Function<Job<?, ?>, Iterable<Edge>>> x) {
+            java.util.function.Function<EdgeProvider, java.util.function.Function<Job<?, ?>, Iterable<Edge>>> x) {
         List<Edge> newEdges = Lists.newArrayList();
         for (ProjectNode projectNode : fromProjects) {
             Job<?,?> project = projectNode.getProject();

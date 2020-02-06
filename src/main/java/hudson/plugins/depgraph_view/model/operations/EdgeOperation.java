@@ -45,7 +45,7 @@ public abstract class EdgeOperation {
     }
     
     /**
-     * Removes double commas and also trailing an leading commas.
+     * Removes double commas and also trailing and leading commas.
      * @param actualValue the actual value to be normalized
      * @return the value with no unrequired commas
      */
