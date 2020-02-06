@@ -33,14 +33,18 @@ public abstract class EdgeOperation {
     protected final AbstractProject<?, ?> target;
 
     public EdgeOperation(String sourceJobName, String targetJobName) {
-        this.source = Jenkins.getInstance().getItemByFullName(sourceJobName.trim(), AbstractProject.class);
-        this.target = Jenkins.getInstance().getItemByFullName(targetJobName, AbstractProject.class);
-        source.checkPermission(Permission.CONFIGURE);
-        target.checkPermission(Permission.CONFIGURE);
+        this.source = Jenkins.getActiveInstance().getItemByFullName(sourceJobName.trim(), AbstractProject.class);
+        this.target = Jenkins.getActiveInstance().getItemByFullName(targetJobName, AbstractProject.class);
+        if (source != null) {
+            source.checkPermission(Permission.CONFIGURE);
+        }
+        if (target != null) {
+            target.checkPermission(Permission.CONFIGURE);
+        }
     }
     
     /**
-     * Removes double commas and also trailing an leading commas.
+     * Removes double commas and also trailing and leading commas.
      * @param actualValue the actual value to be normalized
      * @return the value with no unrequired commas
      */

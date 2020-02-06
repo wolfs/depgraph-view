@@ -22,6 +22,7 @@
 
 package hudson.plugins.depgraph_view.model.layout;
 
+import com.google.common.base.Objects;
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.graph.Graph;
 
@@ -330,7 +331,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 		int movements = 0;
 
 		// restore the old sort
-		CellWrapper<?>[] levelSortBefore = currentLevel.toArray(new CellWrapper [] {});
+		CellWrapper[] levelSortBefore = currentLevel.toArray(new CellWrapper[] {});
 
 		// new sort
 		Collections.sort(currentLevel);
@@ -561,7 +562,7 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 			// if he has the requested new grid position
 			// check the priority
 
-			CellWrapper neighborWrapper = (CellWrapper) currentLevel.get(neighborIndexInTheLevel);
+			CellWrapper<?> neighborWrapper = currentLevel.get(neighborIndexInTheLevel);
 
 			int neighborPriority = neighborWrapper.getPriority();
 
@@ -709,6 +710,19 @@ public class JungSugiyama<V, E> extends AbstractLayout<V, E>
 
 			return (int) (compareValue * 1000);
 
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof CellWrapper)) return false;
+			CellWrapper that = (CellWrapper) o;
+			return Double.compare(that.edgeCrossesIndicator, edgeCrossesIndicator) == 0;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(edgeCrossesIndicator);
 		}
 	}
 

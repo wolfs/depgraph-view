@@ -24,11 +24,11 @@ package hudson.plugins.depgraph_view;
 
 import com.google.common.collect.ListMultimap;
 import com.google.inject.Injector;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Launcher;
 import hudson.model.AbstractModelObject;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Hudson;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
 import hudson.plugins.depgraph_view.model.display.AbstractGraphStringGenerator;
 import hudson.plugins.depgraph_view.model.display.DotGeneratorFactory;
@@ -43,7 +43,6 @@ import hudson.plugins.depgraph_view.model.operations.PutEdgeOperation;
 import hudson.util.LogTaskListener;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
-
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -63,6 +62,7 @@ import java.util.regex.Pattern;
 /**
  * Basic action for creating a Dot-Image of the DependencyGraph
  */
+@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "Everything will be non-null")
 public abstract class AbstractDependencyGraphAction implements Action {
 	
     private final Logger LOGGER = Logger.getLogger(Logger.class.getName());
@@ -94,7 +94,6 @@ public abstract class AbstractDependencyGraphAction implements Action {
         } else {
             rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
-        return;
     }
 
     /**
@@ -102,7 +101,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
      */
     public void doDynamic(StaplerRequest req, StaplerResponse rsp)  throws IOException, ServletException, InterruptedException {
         String path = req.getRestOfPath();
-        SupportedImageType imageType = null;
+        SupportedImageType imageType;
         try {
             imageType = SupportedImageType.valueOf(path.substring(path.lastIndexOf('.')+1).toUpperCase());
         } catch (Exception e) {
@@ -111,7 +110,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
 
         GeneratorFactory generatorFactory = (imageType == SupportedImageType.JSON) ?
                 new JsonGeneratorFactory() : new DotGeneratorFactory();
-        AbstractGraphStringGenerator stringGenerator = null;
+        AbstractGraphStringGenerator stringGenerator;
         if (path.startsWith("/graph.")) {
             Injector injector = Jenkins.lookup(Injector.class);
             GraphCalculator graphCalculator = injector.getInstance(GraphCalculator.class);
@@ -143,9 +142,9 @@ public abstract class AbstractDependencyGraphAction implements Action {
      */
     protected void runDot(OutputStream output, InputStream input, String type)
             throws IOException {
-        DescriptorImpl descriptor = Hudson.getInstance().getDescriptorByType(DescriptorImpl.class);
+        DescriptorImpl descriptor = Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class);
         String dotPath = descriptor.getDotExeOrDefault();
-        Launcher launcher = Hudson.getInstance().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
+        Launcher launcher = Jenkins.getActiveInstance().createLauncher(new LogTaskListener(LOGGER, Level.CONFIG));
         try {
             launcher.launch()
                     .cmds(dotPath,"-T" + type, "-Gcharset=UTF-8", "-q1")
@@ -163,11 +162,11 @@ public abstract class AbstractDependencyGraphAction implements Action {
     }
 
     public boolean isGraphvizEnabled() {
-        return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).isGraphvizEnabled();
+        return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class).isGraphvizEnabled();
     }
 
     public boolean isEditFunctionInJSViewEnabled() {
-        return Hudson.getInstance().getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
+        return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
     }
 
     /**

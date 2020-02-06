@@ -41,10 +41,12 @@ import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
 public class CopyArtifactEdgeProvider implements EdgeProvider {
 
     private boolean copyartifactIsInstalled;
+    private Jenkins jenkins;
 
     @Inject
     public CopyArtifactEdgeProvider(Jenkins jenkins) {
         copyartifactIsInstalled = jenkins.getPlugin("copyartifact") != null;
+        this.jenkins = jenkins;
     }
 
     @Override
@@ -63,7 +65,6 @@ public class CopyArtifactEdgeProvider implements EdgeProvider {
 
                         CopyArtifact caBuilder = (CopyArtifact) builder;
                         String projectName = caBuilder.getProjectName();
-                        Jenkins jenkins = Jenkins.getInstance();
                         AbstractProject<?,?> projectFromName = jenkins.getItem(projectName, project.getParent(), AbstractProject.class);
 
                         if (projectFromName != null) {
