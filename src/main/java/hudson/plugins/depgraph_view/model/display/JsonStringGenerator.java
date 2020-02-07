@@ -131,8 +131,7 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
         json.put("edges", edges);
         json.put("clusters", clusterList);
 
-        final String jsonStr = json.toString(2);
-        return jsonStr;
+        return json.toString(2);
     }
 
     private Map<String, Object> createStandaloneCluster() {
@@ -164,7 +163,7 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
     private ImmutableMap<String, Object> point2Json(double x, double y, ProjectNode node) {
         return ImmutableMap.<String, Object>builder()
                 .put("name", node.getName())
-                .put("fullName", StringEscapeUtils.escapeHtml(node.getProject().getFullName()))
+                .put("fullName", node.getName())
                 .put("url", node.getProject().getAbsoluteUrl())
                 .put("x", x)
                 .put("y", y)
