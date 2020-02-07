@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringEscapeUtils;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Ordering.natural;
 
@@ -162,7 +164,7 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
     private ImmutableMap<String, Object> point2Json(double x, double y, ProjectNode node) {
         return ImmutableMap.<String, Object>builder()
                 .put("name", node.getName())
-                .put("fullName", node.getProject().getFullName())
+                .put("fullName", StringEscapeUtils.escapeHtml(node.getProject().getFullName()))
                 .put("url", node.getProject().getAbsoluteUrl())
                 .put("x", x)
                 .put("y", y)
