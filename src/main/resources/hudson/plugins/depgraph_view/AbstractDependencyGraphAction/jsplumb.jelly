@@ -31,20 +31,20 @@
 	  	<!-- Try to use side panel from parent object, if present. -->
 		<j:choose>
 			<j:when test="${it.parentObject != null}">
-			    <st:include it="${it.parentObject}" page="sidepanel.jelly" optional="true" />
+				<st:include it="${it.parentObject}" page="sidepanel.jelly" optional="true" />
 			</j:when>
-    		<j:otherwise>
-			    <st:include page="sidepanel.jelly" optional="true" />
-    		</j:otherwise>
+		<j:otherwise>
+			<st:include page="sidepanel.jelly" optional="true" />
+		</j:otherwise>
 		</j:choose>
 
 		<l:main-panel>
 			<h1>${it.title}</h1>
 
 			<l:tabBar>
-	            <j:if test="${it.isGraphvizEnabled()}">
-	            	<l:tab name="graphviz" active="${false}" href="." />
-	            </j:if>
+				<j:if test="${it.isGraphvizEnabled()}">
+					<l:tab name="graphviz" active="${false}" href="." />
+				</j:if>
 				<l:tab name="jsplumb" active="${true}" href="./jsplumb" />
 			</l:tabBar>
 
@@ -58,7 +58,12 @@
 			<script type='text/javascript' src='${rootURL}/plugin/depgraph-view/js/jquery-ui-1.8.9.custom.min.js'></script>
 			<script type='text/javascript' src='${rootURL}/plugin/depgraph-view/js/jquery.jsPlumb-1.4.1-all-min.js'></script>
 			<script type="text/javascript" src="${rootURL}/plugin/depgraph-view/js/jsPlumb_depview.js"></script>
-			<script type="text/javascript">window.depview.editEnabled=${it.isEditFunctionInJSViewEnabled()}</script>
+
+			<script type="text/javascript">
+			window.depview.editEnabled=${it.isEditFunctionInJSViewEnabled()};
+			window.depview.projectNameStripRegex=/${it.getProjectNameStripRegex()}/g;
+			window.depview.projectNameStripRegexGroup=${it.getProjectNameStripRegexGroup()};
+			</script>
 
 		</l:main-panel>
 	</l:layout>

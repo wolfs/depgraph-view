@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2010 Stefan Wolf
+  ~ Copyright (c) 2013 Dominik Bartholdi
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy
   ~ of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,6 @@
   ~ THE SOFTWARE.
   -->
 
-<?jelly escape-by-default='true'?>
-
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:section title="${%Dependency Graph Viewer Configuration}">
-    <f:optionalBlock name="graphviz" title="${%Enable rendering with graphviz}" checked="${descriptor.isGraphvizEnabled()}">
-	    <f:entry title="${%Dot Executable Path}" field="dotExe">
-	      <f:textbox value="${descriptor.getDotExe()}"/>
-	    </f:entry>
-    </f:optionalBlock>
-    <f:entry field="editFunctionInJSViewEnabled" title="${%editFunctionInJSViewEnabled}">
-        <f:checkbox checked="${instance.isEditFunctionInJSViewEnabled()}" />
-    </f:entry>
-    <f:entry field="projectNameStripRegex" title="${%projectNameStripRegex}">
-        <f:textbox />
-    </f:entry>
-    <f:entry field="projectNameStripRegexGroup" title="${%projectNameStripRegexGroup}">
-        <f:textbox />
-    </f:entry>    
-  </f:section>
-</j:jelly>
+<div>
+  Allows to define the group of regular expression to be used for to display as the job name, defaults to <code>1</code>.
+</div>

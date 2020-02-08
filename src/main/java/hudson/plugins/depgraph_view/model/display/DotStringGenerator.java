@@ -25,12 +25,17 @@ package hudson.plugins.depgraph_view.model.display;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ListMultimap;
+
+import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
 import hudson.plugins.depgraph_view.model.graph.edge.Edge;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import jenkins.model.Jenkins;
 import static com.google.common.base.Functions.compose;
 import static com.google.common.collect.Lists.transform;
 
@@ -45,8 +50,53 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
         }
     };
 
-    public DotStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
+    /**
+     * If the regex pattern matches, the given string will be striped to the given group. 
+     */
+    private static final class StripFunction implements Function<String, String>{
+
+        private Pattern pattern;
+        private int group;
+
+        public StripFunction(Pattern pattern, int group) {
+            this.pattern = pattern;
+            this.group = group;
+        }
+
+        @Override
+        public String apply(String name) {
+            return stripProjectName(name);
+        }
+
+        private String stripProjectName(String name) {
+            final Matcher matcher = pattern.matcher(name);
+            if(matcher.matches() && matcher.groupCount() >= group) {
+                return matcher.group(group);
+            }
+            return name;
+        }
+    }
+
+    private final StripFunction stripFunction;
+
+
+    public DotStringGenerator(Jenkins jenkins, DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
         super(graph, projects2Subprojects);
+        int projectNameStripRegexGroup = jenkins.getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegexGroup();
+        final String projectNameStripRegex = jenkins.getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegex();
+
+        Pattern nameStripPattern = null;
+        try {
+            nameStripPattern = Pattern.compile(projectNameStripRegex);
+        } catch (Exception e) {
+            nameStripPattern = Pattern.compile(".*");
+        }
+
+        stripFunction = new StripFunction(nameStripPattern, projectNameStripRegexGroup);
+    }
+
+    public DotStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
+        this(Jenkins.getInstance(), graph, projects2Subprojects);
     }
 
     /**
@@ -67,9 +117,9 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
         builder.append(cluster("Main", projectsInDependenciesNodes(), "color=invis;"));
 
         // Stuff not linked to other stuff
-        List<String> standaloneNames = transform(standaloneProjects, compose(ESCAPE, PROJECT_NAME_FUNCTION));
+        List<String> standaloneNamesUnStriped = transform(standaloneProjects, compose(ESCAPE, PROJECT_NAME_FUNCTION));
+        final List<String> standaloneNames = transform(standaloneNamesUnStriped, stripFunction);
         builder.append(cluster("Standalone", standaloneProjectNodes(standaloneNames),"color=invis;"));
-
 
         /****Now define links between objects ****/
 
@@ -83,7 +133,6 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
             builder.append("edge[style=\"invisible\",dir=\"none\"];\n" + Joiner.on(" -> ").join(standaloneNames) + ";\n");
             builder.append("edge[style=\"invisible\",dir=\"none\"];\n" + standaloneNames.get(standaloneNames.size() - 1) + " -> \"Dependency Graph\"");
         }
-
 
         builder.append("}");
 
@@ -117,14 +166,14 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
     }
 
     private String projectToNodeString(ProjectNode proj) {
-        return escapeString(proj.getName()) +
+        return escapeString(stripFunction.apply(proj.getName())) +
                 " [href=" +
                 getEscapedProjectUrl(proj) + "]";
     }
 
     private String projectToNodeString(ProjectNode proj, List<ProjectNode> subprojects) {
         StringBuilder builder = new StringBuilder();
-        builder.append(escapeString(proj.getName()))
+        builder.append(escapeString(stripFunction.apply(proj.getName())))
                 .append(" [shape=\"Mrecord\" href=")
                 .append(getEscapedProjectUrl(proj))
                 .append(" label=<<table border=\"0\" cellborder=\"0\" cellpadding=\"3\" bgcolor=\"white\">\n");
@@ -137,8 +186,8 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
     }
 
     private String getProjectRow(ProjectNode project, String... extraColumnProperties) {
-        return String.format("<tr><td align=\"center\" href=%s %s>%s</td></tr>", getEscapedProjectUrl(project), Joiner.on(" ").join(extraColumnProperties),
-                project.getName());
+        return String.format("<tr><td align=\"center\" href=%s %s>%s</td></tr>", getEscapedProjectUrl(project), 
+                Joiner.on(" ").join(extraColumnProperties), stripFunction.apply(project.getName()));
     }
 
     private String getEscapedProjectUrl(ProjectNode proj) {
@@ -146,8 +195,8 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
     }
 
     private String dependencyToEdgeString(Edge edge, String... options) {
-        return escapeString(edge.source.getName()) + " -> " +
-                escapeString(edge.target.getName()) + " [ color=" + edge.getColor() + " " + Joiner.on(" ").join(options) +" ] ";
+        return String.format("%s -> %s [ color=%s %s ] ", escapeString(stripFunction.apply(edge.source.getName())), 
+                escapeString(stripFunction.apply(edge.target.getName())), edge.getColor(), Joiner.on(" ").join(options));
     }
 
 }

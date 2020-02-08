@@ -28,7 +28,15 @@ import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
+
+import java.io.IOException;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import javax.servlet.ServletException;
+
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -51,6 +59,10 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
         private boolean graphvizEnabled = true;
 
         private boolean editFunctionInJSViewEnabled = false;
+        
+        private String projectNameStripRegex = ".*";
+        
+        private int projectNameStripRegexGroup = 1;
 
         public DescriptorImpl() {
             load();
@@ -67,6 +79,8 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
                 graphvizEnabled = false;
             }
             editFunctionInJSViewEnabled  = o.optBoolean("editFunctionInJSViewEnabled");
+            projectNameStripRegex  = o.optString("projectNameStripRegex", ".*");
+            projectNameStripRegexGroup = o.optInt("projectNameStripRegexGroup", 1);
 
             save();
 
@@ -90,6 +104,14 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             return editFunctionInJSViewEnabled;
         }
 
+        public String getProjectNameStripRegex() {
+            return projectNameStripRegex;
+        }
+
+        public int getProjectNameStripRegexGroup() {
+            return projectNameStripRegexGroup;
+        }
+
         /**
          * @return configured dot executable or a default
          */
@@ -101,6 +123,16 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             }
         }
 
+        public synchronized void setProjectNameStripRegexGroup(int projectNameStripRegexGroup) {
+            this.projectNameStripRegexGroup = projectNameStripRegexGroup;
+            save();
+        }
+        
+        public synchronized void setProjectNameStripRegex(String projectNameStripRegex) {
+            this.projectNameStripRegex = projectNameStripRegex;
+            save();
+        }
+        
         public synchronized void setDotExe(String dotPath) {
             this.dotExe = dotPath;
             save();
@@ -118,6 +150,24 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
 
         public FormValidation doCheckDotExe(@QueryParameter final String value) {
             return FormValidation.validateExecutable(value);
+        }
+        
+        public FormValidation doCheckProjectNameStripRegex(@QueryParameter final String value) 
+                    throws IOException, ServletException {
+                String pattern = Util.fixEmptyAndTrim(value);
+                if (pattern == null) {
+                    return FormValidation.error(Messages.DependencyGraphProperty_ProjectNameStripRegex_Required());
+                }
+                try {
+                    Pattern.compile(pattern);
+                } catch (PatternSyntaxException e) {
+                    return FormValidation.error(Messages.DependencyGraphProperty_ProjectNameStripRegex_Invalid());
+                }
+                return FormValidation.ok();
+        }
+        
+        public FormValidation doCheckProjectNameStripRegexGroup(@QueryParameter final String value) {
+            return FormValidation.validatePositiveInteger(value);
         }
 
     }
