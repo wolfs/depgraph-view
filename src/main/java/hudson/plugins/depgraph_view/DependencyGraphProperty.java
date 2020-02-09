@@ -79,8 +79,8 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
                 graphvizEnabled = false;
             }
             editFunctionInJSViewEnabled  = o.optBoolean("editFunctionInJSViewEnabled");
-            projectNameStripRegex  = o.optString("projectNameStripRegex", ".*");
-            projectNameStripRegexGroup = o.optInt("projectNameStripRegexGroup", 1);
+            setProjectNameStripRegex(o.optString("projectNameStripRegex", ".*"));
+            setProjectNameStripRegexGroup(o.optInt("projectNameStripRegexGroup", 1));
 
             save();
 
@@ -104,11 +104,11 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             return editFunctionInJSViewEnabled;
         }
 
-        public String getProjectNameStripRegex() {
+        public synchronized String getProjectNameStripRegex() {
             return projectNameStripRegex;
         }
 
-        public int getProjectNameStripRegexGroup() {
+        public synchronized int getProjectNameStripRegexGroup() {
             return projectNameStripRegexGroup;
         }
 

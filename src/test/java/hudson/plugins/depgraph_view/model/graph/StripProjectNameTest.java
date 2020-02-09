@@ -5,6 +5,8 @@ import static org.junit.Assert.assertTrue;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
+import hudson.plugins.depgraph_view.model.graph.edge.DependencyGraphEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.edge.EdgeProvider;
 import hudson.plugins.depgraph_view.model.display.DotStringGenerator;
 
 import java.util.Collections;
