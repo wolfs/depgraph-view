@@ -25,12 +25,17 @@ package hudson.plugins.depgraph_view.model.display;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ListMultimap;
+
+import hudson.plugins.depgraph_view.DependencyGraphProperty.DescriptorImpl;
 import hudson.plugins.depgraph_view.model.graph.DependencyGraph;
 import hudson.plugins.depgraph_view.model.graph.ProjectNode;
 import hudson.plugins.depgraph_view.model.graph.edge.Edge;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import jenkins.model.Jenkins;
 import static com.google.common.base.Functions.compose;
 import static com.google.common.collect.Lists.transform;
 
@@ -45,8 +50,62 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
         }
     };
 
-    public DotStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
+    /**
+     * If the regex pattern matches, the given string will be striped to the given group. 
+     */
+    private static final class LabelProjectFunction implements Function<String, String>{
+
+        private Pattern pattern;
+        private int group;
+        private int supergroup;
+
+        public LabelProjectFunction(Pattern pattern, int group, int supergroup) {
+            this.pattern = pattern;
+            this.group = group;
+            this.supergroup = supergroup;
+        }
+
+        @Override
+        public String apply(String name) {
+            return labelProjectName(name);
+        }
+
+        // label=<<FONT POINT-SIZE="10">superscript</FONT><BR />strippedname>
+        private String labelProjectName(String name) {
+            final Matcher matcher = pattern.matcher(name);
+            if(matcher.matches() && matcher.groupCount() >= group) {
+                final StringBuilder sb = new StringBuilder();
+                if (supergroup > 0 && matcher.groupCount() >= supergroup) {
+                    sb.append("<FONT POINT-SIZE=\"10\">").append(matcher.group(supergroup)).append("</FONT><BR />");
+                }
+                sb.append(matcher.group(group));
+                return sb.toString();
+            }
+            return name;
+        }
+    }
+
+    private final LabelProjectFunction stripFunction;
+
+
+    public DotStringGenerator(Jenkins jenkins, DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
         super(graph, projects2Subprojects);
+        int projectNameStripRegexGroup = jenkins.getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegexGroup();
+        final String projectNameStripRegex = jenkins.getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegex();
+        int projectNameSuperscriptRegexGroup = jenkins.getDescriptorByType(DescriptorImpl.class).getProjectNameSuperscriptRegexGroup();
+
+        Pattern nameStripPattern = null;
+        try {
+            nameStripPattern = Pattern.compile(projectNameStripRegex);
+        } catch (Exception e) {
+            nameStripPattern = Pattern.compile(".*");
+        }
+
+        stripFunction = new LabelProjectFunction(nameStripPattern, projectNameStripRegexGroup, projectNameSuperscriptRegexGroup);
+    }
+
+    public DotStringGenerator(DependencyGraph graph, ListMultimap<ProjectNode, ProjectNode> projects2Subprojects) {
+        this(Jenkins.get(), graph, projects2Subprojects);
     }
 
     /**
@@ -70,7 +129,6 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
         List<String> standaloneNames = transform(standaloneProjects, compose(ESCAPE, PROJECT_NAME_FUNCTION));
         builder.append(cluster("Standalone", standaloneProjectNodes(standaloneNames),"color=invis;"));
 
-
         /****Now define links between objects ****/
 
         // edges
@@ -84,7 +142,6 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
             builder.append("edge[style=\"invisible\",dir=\"none\"];\n" + standaloneNames.get(standaloneNames.size() - 1) + " -> \"Dependency Graph\"");
         }
 
-
         builder.append("}");
 
         return builder.toString();
@@ -95,9 +152,6 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
         for (ProjectNode proj : standaloneProjects) {
             builder.append(projectToNodeString(proj, subJobs.get(proj)));
             builder.append(";\n");
-        }
-        if (!standaloneNames.isEmpty()) {
-            builder.append("edge[style=\"invisible\",dir=\"none\"];\n" + Joiner.on(" -> ").join(standaloneNames) + ";\n");
         }
         return builder.toString();
     }
@@ -118,7 +172,7 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
 
     private String projectToNodeString(ProjectNode proj) {
         return escapeString(proj.getName()) +
-                " [href=" +
+                " [label=<" + stripFunction.apply(proj.getName()) + "> href=" +
                 getEscapedProjectUrl(proj) + "]";
     }
 
@@ -137,8 +191,8 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
     }
 
     private String getProjectRow(ProjectNode project, String... extraColumnProperties) {
-        return String.format("<tr><td align=\"center\" href=%s %s>%s</td></tr>", getEscapedProjectUrl(project), Joiner.on(" ").join(extraColumnProperties),
-                project.getName());
+        return String.format("<tr><td align=\"center\" href=%s %s>%s</td></tr>", getEscapedProjectUrl(project), 
+                Joiner.on(" ").join(extraColumnProperties), stripFunction.apply(project.getName()));
     }
 
     private String getEscapedProjectUrl(ProjectNode proj) {
@@ -146,8 +200,8 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
     }
 
     private String dependencyToEdgeString(Edge edge, String... options) {
-        return escapeString(edge.source.getName()) + " -> " +
-                escapeString(edge.target.getName()) + " [ color=" + edge.getColor() + " " + Joiner.on(" ").join(options) +" ] ";
+        return String.format("%s -> %s [ color=%s %s ] ", escapeString(edge.source.getName()), 
+                escapeString(edge.target.getName()), edge.getColor(), Joiner.on(" ").join(options));
     }
 
 }

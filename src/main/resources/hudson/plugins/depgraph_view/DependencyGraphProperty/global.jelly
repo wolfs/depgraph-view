@@ -31,6 +31,15 @@
     </f:optionalBlock>
     <f:entry field="editFunctionInJSViewEnabled" title="${%editFunctionInJSViewEnabled}">
         <f:checkbox checked="${instance.isEditFunctionInJSViewEnabled()}" />
-    </f:entry>    
+    </f:entry>
+    <f:entry field="projectNameStripRegex" title="${%projectNameStripRegex}">
+        <f:textbox />
+    </f:entry>
+    <f:entry field="projectNameStripRegexGroup" title="${%projectNameStripRegexGroup}">
+        <f:textbox />
+    </f:entry>
+    <f:entry field="projectNameSuperscriptRegexGroup" title="${%projectNameSuperscriptRegexGroup}">
+        <f:textbox />
+    </f:entry>
   </f:section>
 </j:jelly>

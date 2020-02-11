@@ -173,6 +173,14 @@ public abstract class AbstractDependencyGraphAction implements Action {
         return Jenkins.get().getDescriptorByType(DescriptorImpl.class).isEditFunctionInJSViewEnabled();
     }
 
+    public String getProjectNameStripRegex() {
+        return Jenkins.get().getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegex();
+    }
+
+    public int getProjectNameStripRegexGroup() {
+        return Jenkins.get().getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegexGroup();
+    }
+
     /**
      * @return projects for which the dependency graph should be calculated
      */
