@@ -37,6 +37,9 @@
     </f:entry>
     <f:entry field="projectNameStripRegexGroup" title="${%projectNameStripRegexGroup}">
         <f:textbox />
-    </f:entry>    
+    </f:entry>
+    <f:entry field="projectNameSuperscriptRegexGroup" title="${%projectNameSuperscriptRegexGroup}">
+        <f:textbox />
+    </f:entry>
   </f:section>
 </j:jelly>

@@ -30,6 +30,27 @@ public class StripProjectNameTest {
         JenkinsLocationConfiguration.get().setUrl("http://localhost");
         j.getInstance().getDescriptorByType(DescriptorImpl.class).setProjectNameStripRegex("com.comp.(.*)");
         j.getInstance().getDescriptorByType(DescriptorImpl.class).setProjectNameStripRegexGroup(1);
+
+        final FreeStyleProject myJob = j.createFreeStyleProject("com.comp.myJob");
+        j.getInstance().rebuildDependencyGraph();
+        DependencyGraph graph = generateGraph(myJob);
+        final SubprojectCalculator subprojectCalculator = new SubprojectCalculator(Collections.<SubProjectProvider>emptySet());
+        final ListMultimap<ProjectNode, ProjectNode> subProjects = subprojectCalculator.generate(graph);
+        final DotStringGenerator dotStringGenerator = new DotStringGenerator(j.getInstance(), graph, subProjects);
+        final String dotString = dotStringGenerator.generate();
+        System.err.println(dotString);
+        // we can't test for not existing of the original name, because that one is still required for linking, 
+        // so we explicitly check for the short/striped version only
+        assertTrue("node label should contain stripped job name", dotString.contains(">myJob<"));
+
+    }
+
+    @Test
+    public void projectNameShouldBeRelabeled() throws Exception {
+        JenkinsLocationConfiguration.get().setUrl("http://localhost");
+        j.getInstance().getDescriptorByType(DescriptorImpl.class).setProjectNameStripRegex("(com[.]comp[.])(.*)");
+        j.getInstance().getDescriptorByType(DescriptorImpl.class).setProjectNameStripRegexGroup(2);
+        j.getInstance().getDescriptorByType(DescriptorImpl.class).setProjectNameSuperscriptRegexGroup(1);
         
         final FreeStyleProject myJob = j.createFreeStyleProject("com.comp.myJob");
         j.getInstance().rebuildDependencyGraph();
@@ -38,10 +59,10 @@ public class StripProjectNameTest {
         final ListMultimap<ProjectNode, ProjectNode> subProjects = subprojectCalculator.generate(graph);
         final DotStringGenerator dotStringGenerator = new DotStringGenerator(j.getInstance(), graph, subProjects);
         final String dotString = dotStringGenerator.generate();
-        
+        System.err.println(dotString);
         // we can't test for not existing of the original name, because that one is still required for linking, 
         // so we explicitly check for the short/striped version only
-        assertTrue("the partial name should be active now", dotString.contains("\"myJob\""));
+        assertTrue("node label should contain superscript and stripped name", dotString.contains("<FONT POINT-SIZE=\"10\">com.comp.</FONT><BR />myJob"));
         
     }
 

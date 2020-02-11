@@ -63,6 +63,8 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
         private String projectNameStripRegex = ".*";
         
         private int projectNameStripRegexGroup = 1;
+        
+        private int projectNameSuperscriptRegexGroup = -1;
 
         public DescriptorImpl() {
             load();
@@ -81,6 +83,7 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             editFunctionInJSViewEnabled  = o.optBoolean("editFunctionInJSViewEnabled");
             setProjectNameStripRegex(o.optString("projectNameStripRegex", ".*"));
             setProjectNameStripRegexGroup(o.optInt("projectNameStripRegexGroup", 1));
+            setProjectNameSuperscriptRegexGroup(o.optInt("projectNameSuperscriptRegexGroup", 1));
 
             save();
 
@@ -112,6 +115,10 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             return projectNameStripRegexGroup;
         }
 
+        public synchronized int getProjectNameSuperscriptRegexGroup() {
+            return projectNameSuperscriptRegexGroup;
+        }
+
         /**
          * @return configured dot executable or a default
          */
@@ -127,7 +134,12 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             this.projectNameStripRegexGroup = projectNameStripRegexGroup;
             save();
         }
-        
+
+        public synchronized void setProjectNameSuperscriptRegexGroup(int projectNameSuperscriptRegexGroup) {
+            this.projectNameSuperscriptRegexGroup = projectNameSuperscriptRegexGroup;
+            save();
+        }
+
         public synchronized void setProjectNameStripRegex(String projectNameStripRegex) {
             this.projectNameStripRegex = projectNameStripRegex;
             save();
