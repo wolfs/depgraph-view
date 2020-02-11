@@ -41,5 +41,8 @@
     <f:entry field="projectNameSuperscriptRegexGroup" title="${%projectNameSuperscriptRegexGroup}">
         <f:textbox />
     </f:entry>
+    <f:entry field="graphRankDirection" title="${%graphRankDirection}">
+        <f:textbox />
+    </f:entry>
   </f:section>
 </j:jelly>
