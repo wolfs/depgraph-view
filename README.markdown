@@ -17,6 +17,7 @@ Shows a dependency graph of the projects using graphviz or jsPlumb. Requires a g
     - restricted to one project
 - Show the graphviz source file or jsPlumb json
 - Respects access permissions
+- Filter project names using regexes
 
 ### Screenshots
 
