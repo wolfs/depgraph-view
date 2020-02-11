@@ -43,6 +43,8 @@ import static com.google.common.collect.Lists.transform;
  * Generates a dot string representation of the graph
  */
 public class DotStringGenerator extends AbstractDotStringGenerator {
+
+    private String rankDirection;
     private static final Function<String, String> ESCAPE = new Function<String, String>() {
         @Override
         public String apply(String from) {
@@ -93,6 +95,7 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
         int projectNameStripRegexGroup = jenkins.getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegexGroup();
         final String projectNameStripRegex = jenkins.getDescriptorByType(DescriptorImpl.class).getProjectNameStripRegex();
         int projectNameSuperscriptRegexGroup = jenkins.getDescriptorByType(DescriptorImpl.class).getProjectNameSuperscriptRegexGroup();
+        this.rankDirection = jenkins.getDescriptorByType(DescriptorImpl.class).getGraphRankDirection();
 
         Pattern nameStripPattern = null;
         try {
@@ -119,6 +122,7 @@ public class DotStringGenerator extends AbstractDotStringGenerator {
 
         builder.append("digraph {\n");
         builder.append("node [shape=box, style=rounded];\n");
+        builder.append("rankdir=").append(rankDirection).append(";\n");
 
         /**** First define all the objects and clusters ****/
 

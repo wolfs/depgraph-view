@@ -59,12 +59,14 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
         private boolean graphvizEnabled = true;
 
         private boolean editFunctionInJSViewEnabled = false;
-        
+
         private String projectNameStripRegex = ".*";
-        
+
         private int projectNameStripRegexGroup = 1;
-        
+
         private int projectNameSuperscriptRegexGroup = -1;
+
+        private String graphRankDirection = "TB";
 
         public DescriptorImpl() {
             load();
@@ -84,7 +86,7 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             setProjectNameStripRegex(o.optString("projectNameStripRegex", ".*"));
             setProjectNameStripRegexGroup(o.optInt("projectNameStripRegexGroup", 1));
             setProjectNameSuperscriptRegexGroup(o.optInt("projectNameSuperscriptRegexGroup", 1));
-
+            setGraphRankDirection(o.optString("graphRankDirection", "TB"));
             save();
 
             return true;
@@ -119,6 +121,10 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             return projectNameSuperscriptRegexGroup;
         }
 
+        public synchronized String getGraphRankDirection() {
+            return graphRankDirection;
+        }
+
         /**
          * @return configured dot executable or a default
          */
@@ -144,7 +150,12 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             this.projectNameStripRegex = projectNameStripRegex;
             save();
         }
-        
+
+       public synchronized void setGraphRankDirection(String graphRankDirection) {
+            this.graphRankDirection = graphRankDirection;
+            save();
+        }
+
         public synchronized void setDotExe(String dotPath) {
             this.dotExe = dotPath;
             save();
@@ -154,7 +165,7 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
             this.graphvizEnabled = graphvizEnabled;
             save();
         }
-        
+
         public void setEditFunctionInJSViewEnabled(boolean editFunctionInJSViewEnabled) {
             this.editFunctionInJSViewEnabled = editFunctionInJSViewEnabled;
             save();
@@ -163,7 +174,7 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
         public FormValidation doCheckDotExe(@QueryParameter final String value) {
             return FormValidation.validateExecutable(value);
         }
-        
+
         public FormValidation doCheckProjectNameStripRegex(@QueryParameter final String value) 
                     throws IOException, ServletException {
                 String pattern = Util.fixEmptyAndTrim(value);
@@ -177,7 +188,7 @@ public class DependencyGraphProperty extends AbstractDescribableImpl<DependencyG
                 }
                 return FormValidation.ok();
         }
-        
+
         public FormValidation doCheckProjectNameStripRegexGroup(@QueryParameter final String value) {
             return FormValidation.validatePositiveInteger(value);
         }
