@@ -47,14 +47,12 @@ import jenkins.model.Jenkins;
 public class PipelineGraphPublisherEdgeProvider implements EdgeProvider {
 
     private final Jenkins jenkins;
-    private final GlobalPipelineMavenConfig globalPMConfig;
     private final boolean isPluginInstalled;
     private final static Logger LOGGER = Logger.getLogger(PipelineGraphPublisherEdgeProvider.class.getName());
 
     @Inject
     public PipelineGraphPublisherEdgeProvider(Jenkins jenkins) {
         this.jenkins = jenkins;
-        this.globalPMConfig = ExtensionList.lookupSingleton(GlobalPipelineMavenConfig.class);
         this.isPluginInstalled = jenkins.getPlugin("pipeline-maven") != null;
     }
 
@@ -64,6 +62,7 @@ public class PipelineGraphPublisherEdgeProvider implements EdgeProvider {
         if (!isPluginInstalled) {
             return edges;
         }
+        GlobalPipelineMavenConfig globalPMConfig = ExtensionList.lookupSingleton(GlobalPipelineMavenConfig.class);
         if (globalPMConfig != null && project instanceof WorkflowJob) {
             PipelineMavenPluginDao dao = globalPMConfig.getDao();
             if (project.getLastSuccessfulBuild() != null) {
@@ -83,6 +82,10 @@ public class PipelineGraphPublisherEdgeProvider implements EdgeProvider {
     @Override
     public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?, ?> project) {
         List<Edge> edges = new ArrayList<>();
+        if (!isPluginInstalled) {
+            return edges;
+        }   
+        GlobalPipelineMavenConfig globalPMConfig = ExtensionList.lookupSingleton(GlobalPipelineMavenConfig.class);
         if (globalPMConfig != null && project instanceof WorkflowJob) {
             PipelineMavenPluginDao dao = globalPMConfig.getDao();
             if (project.getLastSuccessfulBuild() != null) {
