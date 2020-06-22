@@ -64,7 +64,7 @@ public class DependencyGraphEdgeProvider implements EdgeProvider {
     private List<Edge> getEdges(List<DependencyGraph.Dependency> dependencies) {
         List<Edge> edges = new ArrayList<Edge>();
         for (DependencyGraph.Dependency dependency : dependencies) {
-            edges.add(new DependencyEdge(dependency.getUpstreamProject(), dependency.getDownstreamProject()));
+            edges.add(new BuildTriggerEdge(dependency.getUpstreamProject(), dependency.getDownstreamProject()));
         }
         return edges;
     }

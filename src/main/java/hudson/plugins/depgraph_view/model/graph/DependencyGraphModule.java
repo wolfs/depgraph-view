@@ -44,7 +44,6 @@ public class DependencyGraphModule extends AbstractModule {
     @Override
     protected void configure() {
         Multibinder<EdgeProvider> edgeProviderMultibinder = Multibinder.newSetBinder(binder(), EdgeProvider.class);
-        edgeProviderMultibinder.addBinding().to(DependencyGraphEdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(BuildTriggerEdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(ReverseBuildTriggerEdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(FanInReverseBuildTriggerEdgeProvider.class);
@@ -52,6 +51,7 @@ public class DependencyGraphModule extends AbstractModule {
         edgeProviderMultibinder.addBinding().to(ParameterizedTriggerBuilderEdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(CopyArtifactEdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(PipelineGraphPublisherEdgeProvider.class);
+        edgeProviderMultibinder.addBinding().to(DependencyGraphEdgeProvider.class);
         Multibinder<SubProjectProvider> subProjectProviderMultibinder = Multibinder.newSetBinder(binder(), SubProjectProvider.class);
         subProjectProviderMultibinder.addBinding().to(ParameterizedTriggerSubProjectProvider.class);
     }

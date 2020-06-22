@@ -70,7 +70,7 @@ public class PipelineGraphPublisherEdgeProvider implements EdgeProvider {
                 Map<String, Integer> upstreams = dao.listUpstreamJobs(project.getFullName(), project.getLastSuccessfulBuild().getNumber());
                 for (String upstreamName : upstreams.keySet()) {
                     Job<?, ?> upstream = jenkins.getItemByFullName(upstreamName, Job.class);
-                    if (upstream != null) edges.add(new DependencyEdge(upstream, project));
+                    if (upstream != null) edges.add(new MavenDependencyEdge(upstream, project));
                 }
             } else {
                 LOGGER.log(Level.WARNING, "Project " + project.getFullName() + ": lastSuccessfulBuild is null");
@@ -93,7 +93,7 @@ public class PipelineGraphPublisherEdgeProvider implements EdgeProvider {
                 List<String> downstreams = dao.listDownstreamJobs(project.getFullName(), project.getLastSuccessfulBuild().getNumber());
                 for (String downstreamName : downstreams) {
                     Job<?, ?> downstream = jenkins.getItemByFullName(downstreamName, Job.class);
-                    if (downstream != null) edges.add(new DependencyEdge(project, downstream));
+                    if (downstream != null) edges.add(new MavenDependencyEdge(project, downstream));
                 }
             } else {
                 LOGGER.log(Level.WARNING, "Project " + project.getFullName() + ": lastSuccessfulBuild is null");

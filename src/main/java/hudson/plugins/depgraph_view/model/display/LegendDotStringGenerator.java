@@ -52,17 +52,24 @@ public class LegendDotStringGenerator extends AbstractDotStringGenerator {
     private String legend() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("label=\"Legend:\" labelloc=t centered=false color=black node [shape=plaintext]")
-                .append("\"Dependency Graph\"\n")
+                .append("\"Build Trigger\"\n")
                 .append("\"Copy Artifact\"\n")
+                .append("\"Parameterized Trigger\"\n")
+                .append("\"Maven Dependency\"\n")
+                .append("\"Reverse Trigger\"\n")
                 .append("\"Sub-Project\"\n")
                 .append("node [style=invis]\n")
-                .append("a [label=\"\"] b [label=\"\"]")
-                .append(" c [fillcolor=" + escapeString(subProjectColor) + " style=filled fontcolor="
+                .append("a [label=\"\"] b [label=\"\"] c [label=\"\"] d [label=\"\"] e [label=\"\"]")
+                .append(" f [fillcolor=" + escapeString(subProjectColor) + " style=filled fontcolor="
                         + escapeString(subProjectColor) + "]\n")
                 .append("a -> b [style=invis]\n")
-                .append("{rank=same a -> \"Dependency Graph\" [color=black style=bold minlen=2]}\n")
+                .append("c -> d [style=invis]\n")
+                .append("{rank=same a -> \"Build Trigger\" [color=black style=bold minlen=2]}\n")
                 .append("{rank=same b -> \"Copy Artifact\" [color=lightblue minlen=2]}\n")
-                .append("{rank=same c -> \"Sub-Project\" [ style=invis]}\n");
+                .append("{rank=same c -> \"Parameterized Trigger\" [color=blue minlen=2]}\n")
+                .append("{rank=same d -> \"Maven Dependency\" [color=green minlen=2]}\n")
+                .append("{rank=same e -> \"Reverse Trigger\" [color=red minlen=2]}\n")
+                .append("{rank=same f -> \"Sub-Project\" [ style=invis]}\n");
         return stringBuilder.toString();
     }
 

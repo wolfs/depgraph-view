@@ -61,7 +61,7 @@ public class ParameterizedTriggerBuilderEdgeProvider implements EdgeProvider {
 					for (BuildTriggerConfig config : ((TriggerBuilder) builder).getConfigs()) {
 						if (Items.fromNameList(upstream.getParent(), config.getProjects(), Job.class)
 								.contains(project)) {
-							edges.add(new DependencyEdge(upstream, project));
+							edges.add(new ParameterizedTriggerEdge(upstream, project));
 						}
 					}
 				}
@@ -82,7 +82,7 @@ public class ParameterizedTriggerBuilderEdgeProvider implements EdgeProvider {
 					for (BuildTriggerConfig config : ((TriggerBuilder) builder).getConfigs()) {
 						for (Job<?, ?> downstream : Items.fromNameList(project.getParent(), config.getProjects(),
 								Job.class)) {
-							edges.add(new DependencyEdge(project, downstream));
+							edges.add(new ParameterizedTriggerEdge(project, downstream));
 						}
 					}
 				}

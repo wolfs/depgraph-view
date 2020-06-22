@@ -21,7 +21,7 @@ Shows a dependency graph of the projects using graphviz or jsPlumb. Requires a g
 
 ### Screenshots
 
-![](https://wiki.jenkins.io/download/attachments/48300042/depgraph-view-plugin-screen.png?version=1&modificationDate=1292334239000&api=v2)
+![](https://user-images.githubusercontent.com/849495/85310461-4dc39e00-b4b4-11ea-86aa-493d096f62e6.png)
 
 ### Changelog
 

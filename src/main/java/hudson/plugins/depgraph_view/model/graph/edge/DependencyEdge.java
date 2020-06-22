@@ -36,8 +36,25 @@ public class DependencyEdge extends Edge {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || ! (o instanceof DependencyEdge)) return false;
+
+        DependencyEdge edge = (DependencyEdge) o;
+
+        if (!source.equals(edge.source)) return false;
+        if (!target.equals(edge.target)) return false;
+        if (!getType().equals(edge.getType())) return false;
+
+        return true;
+    }
+
+    @Override
     public String getType() {
         return "dep";
     }
 
+    public String getColor() {
+        return "black";
+    }
 }

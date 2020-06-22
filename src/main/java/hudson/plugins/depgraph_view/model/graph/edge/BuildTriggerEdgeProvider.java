@@ -28,10 +28,15 @@ import java.util.List;
 import javax.inject.Inject;
 
 import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.Items;
 import hudson.model.Job;
+import hudson.model.Run;
 import hudson.tasks.BuildTrigger;
 import jenkins.model.Jenkins;
+
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.jenkinsci.plugins.workflow.support.steps.build.BuildUpstreamNodeAction;
 
 /**
  * {@link EdgeProvider} yielding the dependencies of the Jenkins {@link BuildTrigger} publisher.
@@ -53,7 +58,7 @@ public class BuildTriggerEdgeProvider implements EdgeProvider {
 			if (buildTrigger != null
 					&& Items.fromNameList(upstream.getParent(), buildTrigger.getChildProjectsValue(), Job.class)
 							.contains(project)) {
-				edges.add(new DependencyEdge(upstream, project));
+				edges.add(new BuildTriggerEdge(upstream, project));
 			}
 		}
 		return edges;
@@ -67,9 +72,20 @@ public class BuildTriggerEdgeProvider implements EdgeProvider {
 			if (buildTrigger != null) {
 				for (Job<?, ?> downstream : Items.fromNameList(project.getParent(),
 						buildTrigger.getChildProjectsValue(), Job.class)) {
-					edges.add(new DependencyEdge(project, downstream));
+					edges.add(new BuildTriggerEdge(project, downstream));
 				}
 			}
+		} else if (project instanceof WorkflowJob) {
+		    Run<?,?> lastRun = project.getLastSuccessfulBuild();
+		    for (Action action : lastRun.getAllActions()) {
+		        if (action instanceof BuildUpstreamNodeAction) {
+		            BuildUpstreamNodeAction buna = (BuildUpstreamNodeAction) action;
+		            Run<?,?> upstreamRun = Run.fromExternalizableId(buna.getUpstreamRunId());
+		            if (upstreamRun != null) {
+		                edges.add(new BuildTriggerEdge(upstreamRun.getParent(), project));
+		            }
+		        }
+		    }
 		}
 		return edges;
 	}

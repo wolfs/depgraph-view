@@ -44,9 +44,7 @@ public abstract class Edge {
 
     public abstract String getType();
 
-    public String getColor() {
-        return "black";
-    }
+    public abstract String getColor();
 
     @Override
     public boolean equals(Object o) {

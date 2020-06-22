@@ -54,7 +54,7 @@ public class ReverseBuildTriggerEdgeProvider implements EdgeProvider {
 				if (trigger instanceof ReverseBuildTrigger) {
 					for (Job<?, ?> upstream : Items.fromNameList(project.getParent(),
 							((ReverseBuildTrigger) trigger).getUpstreamProjects(), Job.class)) {
-						edges.add(new DependencyEdge(upstream, project));
+						edges.add(new ReverseBuildTriggerEdge(upstream, project));
 					}
 				}
 			}
@@ -72,7 +72,7 @@ public class ReverseBuildTriggerEdgeProvider implements EdgeProvider {
 								.fromNameList(project.getParent(),
 										((ReverseBuildTrigger) trigger).getUpstreamProjects(), Job.class)
 								.contains(project)) {
-					edges.add(new DependencyEdge(project, (Job<?, ?>) downstream));
+					edges.add(new ReverseBuildTriggerEdge(project, (Job<?, ?>) downstream));
 				}
 			}
 		}

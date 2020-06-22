@@ -60,7 +60,7 @@ public class FanInReverseBuildTriggerEdgeProvider implements EdgeProvider {
 				if (trigger instanceof FanInReverseBuildTrigger) {
 					for (Job<?, ?> upstream : Items.fromNameList(project.getParent(),
 							((FanInReverseBuildTrigger) trigger).getUpstreamProjects(), Job.class)) {
-						edges.add(new DependencyEdge(upstream, project));
+						edges.add(new ReverseBuildTriggerEdge(upstream, project));
 					}
 				}
 			}
@@ -80,7 +80,7 @@ public class FanInReverseBuildTriggerEdgeProvider implements EdgeProvider {
 						&& Items.fromNameList(project.getParent(),
 								((FanInReverseBuildTrigger) trigger).getUpstreamProjects(), Job.class)
 								.contains(project)) {
-					edges.add(new DependencyEdge(project, (Job<?, ?>) downstream));
+					edges.add(new ReverseBuildTriggerEdge(project, (Job<?, ?>) downstream));
 				}
 			}
 		}
