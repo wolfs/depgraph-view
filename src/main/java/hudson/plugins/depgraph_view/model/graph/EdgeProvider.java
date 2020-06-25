@@ -22,35 +22,23 @@
 
 package hudson.plugins.depgraph_view.model.graph;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
-
-import hudson.plugins.depgraph_view.model.graph.project.SubProjectProvider;
-
-import javax.inject.Inject;
-import java.util.Collection;
-import java.util.Set;
+import hudson.ExtensionPoint;
+import hudson.model.Job;
+import hudson.plugins.depgraph_view.model.graph.DependencyGraphModule;
+import hudson.plugins.depgraph_view.model.graph.edge.Edge;
 
 /**
- * Used to calculate the subprojects of a project given a set of providers.
+ * This interface is only here to not break other plugin extensions.
+ * 
+ * This is an extension point which makes it possible to add edges
+ * to the DependencyGraph which gets drawn. Note that in order to add your own
+ * EdgeProvider you must not annotate the corresponding subclass with {@link hudson.Extension}
+ * but instead add a {@link com.google.inject.Module} with a {@link com.google.inject.multibindings.Multibinder}
+ * which has the {@link hudson.Extension} annotation. For example see {@link DependencyGraphModule}
+ * and {@link DependencyGraphEdgeProvider}
  */
-public class SubprojectCalculator {
-
-    private Set<SubProjectProvider> providers;
-
-    @Inject
-    public SubprojectCalculator(Set<SubProjectProvider> providers) {
-        this.providers = providers;
-    }
-
-    public ListMultimap<ProjectNode, ProjectNode> generate(DependencyGraph graph) {
-        ListMultimap<ProjectNode, ProjectNode> project2Subprojects = ArrayListMultimap.create();
-        Collection<ProjectNode> nodes = graph.getNodes();
-        for (ProjectNode node : nodes) {
-            for (SubProjectProvider provider : providers) {
-                project2Subprojects.putAll(node, provider.getSubProjectsOf(node.getProject()));
-            }
-        }
-        return project2Subprojects;
-    }
+@Deprecated
+public interface EdgeProvider extends ExtensionPoint {
+    public Iterable<Edge> getUpstreamEdgesIncidentWith(Job<?,?> project);
+    public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?,?> project);
 }

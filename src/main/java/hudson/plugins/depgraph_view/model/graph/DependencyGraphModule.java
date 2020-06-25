@@ -23,6 +23,7 @@
 package hudson.plugins.depgraph_view.model.graph;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
 import com.google.inject.multibindings.Multibinder;
 
 import hudson.Extension;
@@ -35,6 +36,8 @@ import hudson.plugins.depgraph_view.model.graph.edge.ParameterizedTriggerBuilder
 import hudson.plugins.depgraph_view.model.graph.edge.ParameterizedTriggerEdgeProvider;
 import hudson.plugins.depgraph_view.model.graph.edge.PipelineGraphPublisherEdgeProvider;
 import hudson.plugins.depgraph_view.model.graph.edge.ReverseBuildTriggerEdgeProvider;
+import hudson.plugins.depgraph_view.model.graph.project.ParameterizedTriggerSubProjectProvider;
+import hudson.plugins.depgraph_view.model.graph.project.SubProjectProvider;
 
 /**
  * Guice Module for the DependencyGraph
@@ -52,7 +55,7 @@ public class DependencyGraphModule extends AbstractModule {
         edgeProviderMultibinder.addBinding().to(CopyArtifactEdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(PipelineGraphPublisherEdgeProvider.class);
         edgeProviderMultibinder.addBinding().to(DependencyGraphEdgeProvider.class);
-        Multibinder<SubProjectProvider> subProjectProviderMultibinder = Multibinder.newSetBinder(binder(), SubProjectProvider.class);
+        Multibinder<SubProjectProvider> subProjectProviderMultibinder = Multibinder.newSetBinder(binder(),Key.get(SubProjectProvider.class));
         subProjectProviderMultibinder.addBinding().to(ParameterizedTriggerSubProjectProvider.class);
     }
 }

@@ -22,22 +22,22 @@
 
 package hudson.plugins.depgraph_view.model.graph;
 
+import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
+
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import hudson.model.Item;
 import hudson.model.Job;
 import hudson.plugins.depgraph_view.model.graph.edge.Edge;
 import hudson.plugins.depgraph_view.model.graph.edge.EdgeProvider;
-import hudson.model.Item;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import java.util.List;
-import java.util.Set;
-
-import static hudson.plugins.depgraph_view.model.graph.ProjectNode.node;
 
 /**
  * Generates the {@link DependencyGraph} given a set of {@link EdgeProvider}s.
