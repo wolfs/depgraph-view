@@ -71,8 +71,11 @@ public abstract class AbstractDependencyGraphAction implements Action {
 
     /**
      * This method is called via AJAX to obtain the context menu for this model object, but we don't have one...
+     * @param request StaplerRequest
+     * @param response StaplerResponse
+     * @return the ContextMenu we dont thave any
      */
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) {
         return new ContextMenu();
     }
 
@@ -98,8 +101,12 @@ public abstract class AbstractDependencyGraphAction implements Action {
 
     /**
      * graph.{png,gv,...} is mapped to the corresponding output
+     * @param req StaplerRequest
+     * @param rsp StaplerResponse
+     * @throws IOException if dot fails
+     * @throws ServletException
      */
-    public void doDynamic(StaplerRequest req, StaplerResponse rsp)  throws IOException, ServletException, InterruptedException {
+    public void doDynamic(StaplerRequest req, StaplerResponse rsp)  throws IOException, ServletException {
         String path = req.getRestOfPath();
         SupportedImageType imageType;
         try {
@@ -143,6 +150,9 @@ public abstract class AbstractDependencyGraphAction implements Action {
     /**
      * Execute the dot command with given input and output stream
      * @param type the parameter for the -T option of the graphviz tools
+     * @param input the input stream to connect to dot execution
+     * @param output the output stream to connect to dot execution
+     * @throws IOException in case of dot execution errors
      */
     protected void runDot(OutputStream output, InputStream input, String type)
             throws IOException {
