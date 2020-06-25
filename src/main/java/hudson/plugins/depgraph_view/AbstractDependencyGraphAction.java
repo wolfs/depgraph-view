@@ -104,7 +104,7 @@ public abstract class AbstractDependencyGraphAction implements Action {
      * @param req StaplerRequest
      * @param rsp StaplerResponse
      * @throws IOException if dot fails
-     * @throws ServletException
+     * @throws ServletException for other errors
      */
     public void doDynamic(StaplerRequest req, StaplerResponse rsp)  throws IOException, ServletException {
         String path = req.getRestOfPath();
