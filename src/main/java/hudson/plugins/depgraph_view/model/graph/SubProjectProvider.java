@@ -24,8 +24,13 @@ package hudson.plugins.depgraph_view.model.graph;
 
 import hudson.ExtensionPoint;
 import hudson.model.Job;
+import hudson.plugins.depgraph_view.model.graph.DependencyGraphModule;
+import hudson.plugins.depgraph_view.model.graph.ProjectNode;
+import hudson.plugins.depgraph_view.model.graph.project.ParameterizedTriggerSubProjectProvider;
 
 /**
+ * This interface is only here to not break other plugin extensions.
+ * 
  * This is an extension point which makes it possible to subprojects
  * to the DependencyGraph which gets drawn. Note that in order to add your own
  * EdgeProvider you must not annotate the corresponding subclass with {@link hudson.Extension}
@@ -33,6 +38,7 @@ import hudson.model.Job;
  * which has the {@link hudson.Extension} annotation. For example see {@link DependencyGraphModule}
  * and {@link ParameterizedTriggerSubProjectProvider}
  */
+@Deprecated  
 public interface SubProjectProvider extends ExtensionPoint {
     public Iterable<ProjectNode> getSubProjectsOf(Job<?,?> project);
 }

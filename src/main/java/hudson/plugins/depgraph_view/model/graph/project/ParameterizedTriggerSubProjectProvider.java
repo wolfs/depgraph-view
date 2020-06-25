@@ -20,12 +20,13 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.depgraph_view.model.graph;
+package hudson.plugins.depgraph_view.model.graph.project;
 
 import com.google.common.base.Preconditions;
 import hudson.model.Job;
 import hudson.model.FreeStyleProject;
 import hudson.model.Items;
+import hudson.plugins.depgraph_view.model.graph.ProjectNode;
 import hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig;
 import hudson.plugins.parameterizedtrigger.TriggerBuilder;
 import hudson.tasks.Builder;
