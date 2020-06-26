@@ -18,6 +18,12 @@ Shows a dependency graph of the projects using graphviz or jsPlumb. Requires a g
 - Show the graphviz source file or jsPlumb json
 - Respects access permissions
 - Filter project names using regexes
+- Show edge by color depending on edge provider
+    - reverse triggers (fan-in, "build when other project builds"): red
+    - jenkins dependency graph: black
+    - parameterized trigger: blue
+    - maven pipeline dependency graph ("withMaven"): green
+    - copy artifact (not yet available for pipelines): cyan
 
 ### Screenshots
 
