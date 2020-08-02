@@ -24,6 +24,8 @@ package hudson.plugins.depgraph_view.model.graph.edge;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
@@ -44,6 +46,7 @@ import org.jenkinsci.plugins.workflow.support.steps.build.BuildUpstreamNodeActio
 public class BuildTriggerEdgeProvider implements EdgeProvider {
 
 	private final Jenkins jenkins;
+	private final Logger LOGGER = Logger.getLogger(BuildTriggerEdgeProvider.class.getName());
 
 	@Inject
 	public BuildTriggerEdgeProvider(Jenkins jenkins) {
@@ -63,7 +66,7 @@ public class BuildTriggerEdgeProvider implements EdgeProvider {
 		}
 		return edges;
 	}
-	
+
 	@Override
 	public Iterable<Edge> getDownstreamEdgesIncidentWith(Job<?, ?> project) {
 		List<Edge> edges = new ArrayList<>();
@@ -76,16 +79,23 @@ public class BuildTriggerEdgeProvider implements EdgeProvider {
 				}
 			}
 		} else if (project instanceof WorkflowJob) {
-		    Run<?,?> lastRun = project.getLastSuccessfulBuild();
-		    for (Action action : lastRun.getAllActions()) {
-		        if (action instanceof BuildUpstreamNodeAction) {
-		            BuildUpstreamNodeAction buna = (BuildUpstreamNodeAction) action;
-		            Run<?,?> upstreamRun = Run.fromExternalizableId(buna.getUpstreamRunId());
-		            if (upstreamRun != null) {
-		                edges.add(new BuildTriggerEdge(upstreamRun.getParent(), project));
-		            }
-		        }
-		    }
+			Run<?,?> lastRun = project.getLastSuccessfulBuild();
+			if (lastRun == null) {
+				lastRun = project.getLastBuild();
+			}
+			if (lastRun != null) {
+				for (Action action : lastRun.getAllActions()) {
+					if (action instanceof BuildUpstreamNodeAction) {
+						BuildUpstreamNodeAction buna = (BuildUpstreamNodeAction) action;
+						Run<?,?> upstreamRun = Run.fromExternalizableId(buna.getUpstreamRunId());
+						if (upstreamRun != null) {
+							edges.add(new BuildTriggerEdge(upstreamRun.getParent(), project));
+						}
+					}
+				}
+			} else {
+				LOGGER.log(Level.FINE, "Not graphing edges for project " + project.getFullName() + " because it has not been built yet.");
+			}
 		}
 		return edges;
 	}

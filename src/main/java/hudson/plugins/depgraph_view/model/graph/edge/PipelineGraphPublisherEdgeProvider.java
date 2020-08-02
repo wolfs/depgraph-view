@@ -66,14 +66,14 @@ public class PipelineGraphPublisherEdgeProvider implements EdgeProvider {
         if (globalPMConfig != null && project instanceof WorkflowJob) {
             PipelineMavenPluginDao dao = globalPMConfig.getDao();
             if (project.getLastSuccessfulBuild() != null) {
-                LOGGER.log(Level.FINE, "Project" + project.getFullName() + ", build: " + project.getLastSuccessfulBuild().getNumber());
+                LOGGER.log(Level.FINEST, "Project" + project.getFullName() + ", build: " + project.getLastSuccessfulBuild().getNumber());
                 Map<String, Integer> upstreams = dao.listUpstreamJobs(project.getFullName(), project.getLastSuccessfulBuild().getNumber());
                 for (String upstreamName : upstreams.keySet()) {
                     Job<?, ?> upstream = jenkins.getItemByFullName(upstreamName, Job.class);
                     if (upstream != null) edges.add(new MavenDependencyEdge(upstream, project));
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Project " + project.getFullName() + ": lastSuccessfulBuild is null");
+                LOGGER.log(Level.FINE, "Project " + project.getFullName() + ": not graphing edges because it was not built yet");
             }
         }
         return edges;
@@ -89,14 +89,14 @@ public class PipelineGraphPublisherEdgeProvider implements EdgeProvider {
         if (globalPMConfig != null && project instanceof WorkflowJob) {
             PipelineMavenPluginDao dao = globalPMConfig.getDao();
             if (project.getLastSuccessfulBuild() != null) {
-                LOGGER.log(Level.FINE, "Project" + project.getFullName() + ", build: " + project.getLastSuccessfulBuild().getNumber());
+                LOGGER.log(Level.FINEST, "Project" + project.getFullName() + ", build: " + project.getLastSuccessfulBuild().getNumber());
                 List<String> downstreams = dao.listDownstreamJobs(project.getFullName(), project.getLastSuccessfulBuild().getNumber());
                 for (String downstreamName : downstreams) {
                     Job<?, ?> downstream = jenkins.getItemByFullName(downstreamName, Job.class);
                     if (downstream != null) edges.add(new MavenDependencyEdge(project, downstream));
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Project " + project.getFullName() + ": lastSuccessfulBuild is null");
+                LOGGER.log(Level.FINE, "Project " + project.getFullName() + ": not graphing edges because it was not built yet");
             }
         }
         return edges;
