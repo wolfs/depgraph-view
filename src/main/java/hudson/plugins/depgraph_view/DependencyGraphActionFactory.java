@@ -22,15 +22,14 @@
 
 package hudson.plugins.depgraph_view;
 
-import hudson.Extension;
-import hudson.model.AbstractModelObject;
-import hudson.model.FreeStyleProject;
-import hudson.model.Job;
-import hudson.model.Action;
-import jenkins.model.TransientActionFactory;
-
 import java.util.Collection;
 import java.util.Collections;
+
+import hudson.Extension;
+import hudson.model.AbstractModelObject;
+import hudson.model.Action;
+import hudson.model.Job;
+import jenkins.model.TransientActionFactory;
 
 /**
  * Factory to add a dependency graph view action to each project
