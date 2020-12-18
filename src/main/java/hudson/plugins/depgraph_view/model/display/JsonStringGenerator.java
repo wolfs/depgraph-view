@@ -45,6 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Ordering.natural;
 
@@ -76,6 +79,7 @@ public class JsonStringGenerator extends AbstractGraphStringGenerator {
         Collections.sort(clusters, natural().onResultOf(new Function<Set<ProjectNode>, Integer>() {
             @Override
             public Integer apply(Set<ProjectNode> input) {
+            	if (input == null) return 0;
                 return input.size();
             }
         }).reverse());
