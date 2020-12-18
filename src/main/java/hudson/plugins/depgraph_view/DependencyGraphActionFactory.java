@@ -24,6 +24,7 @@ package hudson.plugins.depgraph_view;
 
 import hudson.Extension;
 import hudson.model.AbstractModelObject;
+import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.Action;
 import jenkins.model.TransientActionFactory;
